@@ -1,0 +1,16 @@
+{% load static %}
+{% spaceless %}
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<link rel="icon" type="image/x-icon" href="{% static "favicon.ico" %}">
+			<title>ShaMus | Выход</title>
+		</head>
+		<body>
+			<h2 style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; width: 25%; height: 10em; margin: auto;">Вы вышли. До свидания.</h2>
+		</body>
+		<script>
+			document.cookie = "user=null; max-age=-1";
+		</script>
+	</html>
+{% endspaceless %}

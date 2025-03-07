@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block "layout" %}
+	<form method="POST" action="{% url 'artist-add' %}">
+		{% csrf_token %}
+		{% if form.non_field_errors %}
+			<ul class="red">
+				{% for error in form.non_field_errors %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+
+		{% for hidden_field in form.hidden_fields %}
+			{% if hidden_field.errors %}
+				<ul class="red">
+					{% for error in hidden_field.errors %}
+						<li>(Скрытое поле {{ hidden_field.name }}) {{ error }}</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+			{{ hidden_field }}
+		{% endfor %}
+		<table>
+			{% for field in form.visible_fields %}
+				<tr>
+					<th>{{ field.label_tag }}</th>
+					<td>
+						{% if field.errors %}
+							<ul class="red">
+								{% for error in field.errors %}
+									<li>{{ error }}</li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+						<div>{{ field }}</div>
+						{% if field.help_text %}
+							{{ field.help_text }}
+						{% endif %}
+						{% if field.initial %}
+							{% if field.name == 'artist' %}
+								<br /><span style="font-size: 0.75em; font-style: italic;">{{ field.initial|join:", " }}</span>
+							{% else %}
+								<br /><span style="font-size: 0.75em; font-style: italic;">{{ field.initial }}</span>
+							{% endif %}
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</table>
+		{% for error in form.title.errors.as_data %}
+			{% if error.code == "repeat" %}<input type="submit" name="artist_repeat_allow" value="Всё равно сохранить" class="form-btn" />{% endif %}
+		{% endfor %}
+		<input type="submit" name="save" value="Сохранить" class="form-btn" {% for error in form.title.errors.as_data %}{% if error.code == "repeat" %} style="display: none;"{% endif %}{% endfor %} />
+
+	</form>
+{% endblock %}

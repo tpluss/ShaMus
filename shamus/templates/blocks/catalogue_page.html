@@ -1,0 +1,13 @@
+<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;<span>{{ symbol }}</span>&nbsp;<a href="{% url 'catalogue-page-first-symbol' symbol %}">&#x21bb;</a></h2>
+<div>
+	{% if artists %}
+		<ul>
+			{% for artist in artists %}
+				<li><a href="{% url 'artist-view' artist.id %}">{{ artist }}</a></li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+</div>
+<div>
+    Не нашли нужного? Тогда <a href="{% url 'artist-add' %}" target="_blank">добавьте Исполнителя</a>.
+</div>

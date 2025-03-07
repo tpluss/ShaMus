@@ -1,0 +1,21 @@
+{% load static %}
+{% spaceless %}
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<title>ShaMus{% if title  %} | {{ title }}{% endif %}</title>
+			<link rel="icon" type="image/x-icon" href="{% static "favicon.ico" %}">
+			<link rel="stylesheet" href="{% static "css.css" %}">
+		</head>
+		<body>
+			{% block "layout" %}{% endblock %}
+		</body>
+		<script src="{% static "js.js" %}"></script>
+		<script>
+			if (getCookie("user") != "{{ user }}") {
+				console.log('set');
+				document.cookie = "user={{ user }}";
+			}
+		</script>
+	</html>
+{% endspaceless %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block "layout" %}
+    <div id="player_wrap">
+	    <audio id="shamus"></audio>
+	    <div id="player_audio_data_wrap">
+		    <span>Исполнитель:</span>&nbsp;<span id="player_audio_data_artist"></span>&nbsp;<span>Альбом:</span>&nbsp;<span id="player_audio_data_album"></span>
+		    <div>
+			    <span>Композиция:</span>&nbsp;<span id="player_audio_data_track"></span>
+		    </div>
+	    </div>
+	    <div id="player_track_duration_wrap">
+		    	
+		    <div id="player_track_duration_slider">
+			    <div id="player_track_duration_timer">
+			        &nbsp;
+		        </div>
+		    </div>
+	    </div>
+	    <table id="player_buttons_wrap">
+		    <tr>
+			    <td id="player_btn_pr" class="player-btn" title="Предыдущий">&#x23ee;</td>
+			    <td id="player_btn_ne" class="player-btn" title="Следующий">&#x23ed;</td>
+		    </tr>
+		    <tr>
+			    <td id="player_btn_pa" class="player-btn" title="Пауза">&#x23f8;</td>
+			    <td id="player_btn_pl" class="player-btn" title="Проиграть">&#x23ef;</td>
+		    </tr>
+		    <tr>
+			    <td id="player_btn_re" class="player-btn" title="Повторять">&#x21ba;</td>
+			    <td id="player_btn_ra" class="player-btn" title="Случайно">&#x211b;</td>
+		    </tr>
+	    </table>
+	    <div id="player_volume_wrap">
+		    <div id="player_volume_slider">
+			    &nbsp;
+		    </div>
+		    <div id="player_volume_button">
+			    &#x1f50a;
+		    </div>
+	    </div>	
+    </div>
+    <div id="workplace_wrap">
+        <div id="workplace_main">
+            {% block "content" %}{% endblock %}
+        </div>
+        <div id="workplace_playlist_current">
+            <h2>Текущий Плейлист {{ user }}</h2>
+        </div>
+    </div>
+{% endblock %}

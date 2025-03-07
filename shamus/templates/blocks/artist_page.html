@@ -1,0 +1,19 @@
+<div>
+    <h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;<a href="{% url 'catalogue-page-first-symbol' artist.title.0 %}">{{ artist.title.0 }}</a>{{ artist.title|slice:"1:" }}&nbsp;<a href="{% url 'artist-view' artist.id %}">&#x21bb;</a></h2>
+</div>
+{% if albums %}
+    <ul>
+        {% for album in albums %}
+            <li><a href="{% url 'album-view' album.id %}">{{ album }}</a></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <h4>Альбомы ещё не добавлялись.</h4>
+{% endif %}
+<h3><a href="{% url 'artist-add-album' artist.id %}" target="_blank">Добавить</a> Альбомы</h3>
+{% if tracks %}
+    {% include "blocks/_tracklist_block.html" %}
+{% else %}
+    <h4>Треки ещё не добавлялись.</h4>
+{% endif %}
+<h3><a href="{% url 'upload' 'artist' artist.id %}" target="_blank">Добавить</a> Треки</h3>

@@ -1,0 +1,22 @@
+<div>
+    <div>
+		{% with album_artist=album.artist.all %} 
+			<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;{% for artist in album_artist %}<a href="{% url 'catalogue-page-first-symbol' artist.title.0 %}">{{ artist.title.0 }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}&nbsp;&gt;&nbsp;{% for artist in album.artist.all %}<a href="{% url 'artist-view' artist.id %}">{{ artist.title }}{% if not forloop.last %}, {% endif %}</a>{% endfor %}</h2>
+        {% endwith %}
+		<h2>Альбом: {{ album.title_year }}</h2>
+        <div>
+            <a href="{% url 'album-view' album.id %}" id="load-album">&#x21bb;</a>
+            &nbsp;<a href="{% url 'download' 'album' album.id %}" target="_blank">&#x2913;</a>
+            &nbsp;<a href="{% url 'album-edit' album.id %}" target="_blank">&#x270e;</a>
+            &nbsp;<a href="" onclick="var tmp = document.createElement('input'); tmp.value = document.location.href.slice(0, -1); document.body.appendChild(tmp); tmp.select(); document.execCommand('copy'); tmp.remove();">&#x1F517;</a>
+        </div>
+    </div>
+    {% if album.track %}
+        {% with tracks=album.get_ordered_track %}
+            {% include "blocks/_tracklist_block.html" %}
+        {% endwith %}
+    {% else %}
+        <h4>Треки ещё не добавлялись.</h4>
+    {% endif %}
+    <h3><a href="{% url 'upload' 'album' album.id %}" target="_blank">Добавить</a> Треки</h3>
+</div>

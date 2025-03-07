@@ -1,0 +1,26 @@
+{% load static %}
+{% spaceless %}
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<link rel="icon" type="image/x-icon" href="{% static "favicon.ico" %}">
+			<title>ShaMus | Вход</title>
+		</head>
+		<body>
+			<form method="POST" action="" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; width: 10em; height: 10em; margin: auto;">
+				{% csrf_token %}
+				<table>
+					<tr>
+						<th><label for="">Логин:</label></th><td>{{ form.username }}</td>
+					</tr>
+					<tr>
+						<th><label for="">Пароль:</label></th><td>{{ form.password }}</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="text-align: center;"><input type="submit" value="Вход" style="width: 10em; height: 2.5em;"></td>
+					</tr>
+				</table>
+			</form>
+		</body>
+	</html>
+{% endspaceless %}

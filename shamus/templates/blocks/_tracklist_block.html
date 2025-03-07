@@ -1,0 +1,12 @@
+<div class="to-current-playlist-list">&rarr;</div>
+<ul class="tracklist">
+    {% for track in tracks %}
+        <li>
+            <div style="font-size:0.6em; font-style: italic; margin-bottom:-0.5em;">{% for artist in track.artist.all %}<a href="{% url 'artist-view' artist.id %}">{{ artist.title }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+            {{ track.title|default:track.get_file_name }}{% with track.get_duration_min as track_min %}{% if track_min %}&nbsp; | {{ track_min }}{% endif %}{% endwith %} | 
+            &nbsp;<a href="{% url 'download' 'track' track.id %}" target="_blank">&#x2913;</a>
+            &nbsp;<a href="{% url 'track-edit' track.id %}" target="_blank">&#x270e;</a>
+            <div class="to-current-playlist" data-id="{{ track.id }}" data-file-path="{{ track.get_url }}" data-file-full-name="{{ track.get_full_name }}" data-title="{{ track.get_name }}" data-artist="{{ track.get_artists_title }}" data-album="{% if album %}{{ album.title }}{% endif %}" data-duration="{{ track.get_duration_min|default_if_none:"" }}">&rarr;</div>
+        </li>
+    {% endfor %}
+</ul>

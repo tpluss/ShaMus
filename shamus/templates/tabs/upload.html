@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block "layout" %}
+	<div>
+        {% if dst_cls == 'album' %}
+            <h2>Загрузка Треков в Альбом <a href="{% url 'album-view' dst_instance.id %}">{{ dst_instance }}</a> к Исполнителю <a href="{% url 'artist-view' dst_instance.artist.all.0.id %}">{{ dst_instance.artist.all|join:", " }}</a></h2>
+        {% else %}
+            <h2>Загрузка Треков к Исполнителю <a href="{% url 'artist-view' dst_instance.id %}">{{ dst_instance.title }}</a></h2>
+        {% endif %}
+        {% if upload_result %}
+			<ul style="list-style-type: decimal; margin-top: 1em; margin-left: 2.5em;">
+			{% for res in upload_result %}
+				<li>{{ res.0 }} - {% if res.1 %}{% if res.1.id %}<span style="color: orange;">Уже загружен ранее как</span>&nbsp;<a href="{% url 'track-edit' res.1.id %}">{{ res.1.get_full_name }}</a>{% else %}<span style="color: green;">&#x2611;</span>{% endif %}{% else %}<span style="color: red;">&#x2612;</span>{% endif %}</li>
+			{% endfor %}
+			</ul>
+		    <h3 style="margin-top: 1em;"><a href="{% url 'upload' dst_cls dst_instance.id %}">Загрузить ещё?</h3>
+        {% else %}
+            {% if form.errors %}<div class="warn">{{ form.file_field.errors }}</div>{% endif %}
+            <form method="POST" action="{% url 'upload' dst_cls dst_instance.id %}" enctype="multipart/form-data" style="margin-top: 1em;">
+			    {% csrf_token %}
+                <div style="text-align: center;">Загрузите один или несколько файлов, добавив их через кнопку выбора файлов. После их загрузки на сервер откроется страница с результатами обработки.</div>
+			    <div><label for="{{ form.file_field.auto_id }}">{{ form.file_field.label }}</label>:&nbsp;{{ form.file_field }}</div>
+			    <input type="submit" name="upload" id="id_upload" value="Загрузить" class="form-btn" />
+			    <div class="warn">
+				    Загружая файлы, я подтверждаю, что имею права на их использование, владение, копирование. Мною не преследуются коммерческие или иные цели, направленные на извлечение прибыли от использования файлов и/или совершение деструктивных действий, причиние убытков авторам, владельцам, распространителям. Также я подтверждаю, что загружаемые файлы не входят в <a href="https://minjust.gov.ru/ru/extremist-materials/" target=_"blank">Федеральный список экстремистских материалов</a> или иной ограничивающий их распространение перечень, действующий на основании законных актов.
+			    </div>
+		    </form>
+        {% endif %}
+	</div>
+{% endblock %}

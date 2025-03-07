@@ -1,0 +1,17 @@
+<h3>Исполнитель на:</h3>
+<table style="text-align: center;">
+	<tr>
+		{% for s in catalogue_symbols %}
+			<td style="min-width: 2em;"><a href="{% url 'catalogue-page-first-symbol' s %}">{{ s }}</a></td>
+			{% if forloop.counter > 0 and forloop.counter|divisibleby:11 and s not in "ALW06" %}
+				</tr><tr>
+			{% elif s.0 in "ЯKVZ!" %}
+				</tr><tr>
+			{% endif %}	
+		{% endfor %}
+</table>
+{% for artist in default_artists %}
+	<a href="{% url 'artist-view' artist.id %}">{{ artist.title }}</a>&nbsp;
+{% endfor %}
+
+<a href="{% url 'last-uploaded' %}">Последние загрузки</a>
