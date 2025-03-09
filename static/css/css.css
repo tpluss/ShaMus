@@ -53,12 +53,15 @@ ul {
 	text-align: center;
 	cursor: pointer;
 	user-select: none;
+	float: left;
 }
 
 #player_volume_button {
+	width: 4%;
 	text-align: center;
 	cursor: pointer;
 	user-select: none;
+	float: right;
 }
 
 #player_buttons_wrap {

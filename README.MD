@@ -50,7 +50,103 @@ _Данные: Путь к файлу на диске - Имя файла для
 Ссылка на загрузку Треков находится или в карточке Исполнителя, для привязки к нему, или в карточке Альбома, для загрузки в него. Открывается в новом окне, чтобы не сбивать прослушивание.
 
 
-## Запуск dev на win
+# Установка, настройка, dev-сервер
+### Установка
+Для работы потребуется наличие python3, django >= 4.2, ПО для работы с выбранной вами базой данных.
+Изначально разработка ShaMus велась на Win с БД Sqlite3, а рабочий сервер на Ubuntu из связки Apache2 + MySQL. 
+
+Это не исчерпывающая инструкция и со временем возможны отличия: настройка окружения и web-сервера лежит на пользователе. Ниже приведён пример действий на момент написания.
+
+### Разворачивание проекта на Ubuntu
+```
+Создаём виртуальное окружение pip в папке проекта
+Устанавливаем необходимые системные пакеты sudo apt-get install python3-dev mysql-server libmysqlclient-dev libapache2-mod-wsgi-py3
+Устанавливаем необходимые пакеты pip install -r requirements.txt -> Django, mysqlclient
+В файле settings.py смотрим какие значения настроек подключаются через переменные окружения или же указываем их в файле напрямую
+Настраиваем конфиг apache2 (см. ниже)
+Создаём пользователя и базу данных в MySQL (см. ниже)
+Запускаем миграции python manage.py migrate
+Запускаем сбор статики python manage.py collectstatic 
+```
+
+#### Конфигурация Apache2
+```
+<VirtualHost *:50120>
+        # Ниже и далее по тексту замените <ПУТЬ ДО ПРОЕКТА> на путь до папки с ShaMus.
+        DocumentRoot <ПУТЬ ДО ПРОЕКТА>
+
+        # Подключение правил для скрытия сервера. Если пользователь приходит без cookie с нужным guid - происходит редирект на выбранный адрес.
+        # После перехода по "правильной" ссылке с нужным GUID данное значение устанвливается в cookie и можно будет попасть в ShaMus.
+        # <GUID> - сгенерированный GUID в любом сервисе; <REDIRECT_URL> - URL, куда будет перенаправляться вход без правильного cookie.
+        RewriteEngine On
+        RewriteCond %{QUERY_STRING} /?guid=<GUID> [NC]
+        RewriteCond %{HTTP_COOKIE} !(guid=<GUID>) [NC]
+        RewriteRule (.*) $1? [CO=guid:<GUID>:%{HTTP_HOST}:/:364000000,R=307,L]
+        RewriteCond %{HTTP_COOKIE} !(guid=<GUID>)
+        RewriteRule (.*) <REDIRECT_URL> [R=307,L]
+
+        Alias /favicon.ico <ПУТЬ ДО ПРОЕКТА>/static/favicon.ico
+        Alias /static/ <ПУТЬ ДО ПРОЕКТА>/static/
+        Alias /media/ <ПУТЬ ДО ПРОЕКТА>/media/
+
+        <Directory <ПУТЬ ДО ПРОЕКТА>/static>
+                Require all granted
+        </Directory>
+
+        <Directory <ПУТЬ ДО ПРОЕКТА>/media>
+                Require all granted
+        </Directory>
+
+        # Обратите внимание, что в python-home указывается путь не до проект, а до папки, в которой лежит папка с ним - виртуальное окружение.
+        # <ПУТЬ ДО VENV> - папка с виртуальным окружением, внутри которой находится папка проекта.
+        WSGIScriptAlias / <ПУТЬ ДО ПРОЕКТА>/shamus/wsgi.py
+        WSGIDaemonProcess www-data python-home=<ПУТЬ ДО VENV>/env-site python-path=<ПУТЬ ДО ПРОЕКТА>
+        # По умолчанию задано www-data, вы можете настраивать в соответствии с тем, какие пользователи и группы исопльзуются у вас в системе.
+        WSGIProcessGroup www-data
+
+        <Directory <ПУТЬ ДО ПРОЕКТА>/shamus/>
+                <Files wsgi.py>
+                        Require all granted
+                </Files>
+        </Directory>
+
+        # Логи веб-сервера можно перенаправить в нужную вам папку. По умолчанию сохраняются в папку logs внутри проекта.
+        #LogLevel info ssl:warn
+        ErrorLog <ПУТЬ ДО ПРОЕКТА>/logs/error.log
+        CustomLog <ПУТЬ ДО ПРОЕКТА>/logs/access.log combined
+</VirtualHost>
+
+```
+
+#### Первичная настройка MySQL
+На примере БД с наимнованием shamus, пользователем shamus.
+После установки MySQL потребуется подключиться как root, чтобы создать отдельного пользователя для проекта.
+См. документацию MySQL: https://dev.mysql.com/doc/refman/8.4/en/default-privileges.html
+
+```
+sudo mysql -uroot -p
+```
+Подключившись как root, создаём пользователя и задаём права.
+<ПАРОЛЬ ДЛЯ MySQL> - пароль пользователя базы данных.
+```
+CREATE USER 'shamus'@'localhost' IDENTIFIED BY '<ПАРОЛЬ ДЛЯ MySQL>';
+GRANT ALL PRIVELEGES ON shamus.* TO 'shamus'@'localhost';
+FLUSH PRIVILEGES;
+```
+Создание пользователя shamus для поключения на localhost с паролем <ПАРОЛЬ ДЛЯ MySQL>, выдача прав на полное использование всех таблиц в БД, сохранение прав.
+После этого выходим из-под root и подключаемся к MySQL уже с созданным пользователем shamus.
+
+```
+musql -ushamus -p
+```
+
+Создаём БД и включаем поддержку UTF-8.
+```
+CREATE DATABASE shamus;
+ALTER DATABASE shamus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### Запуск dev на Win
 Создаём bat
 ```
 @ECHO OFF

@@ -178,7 +178,7 @@ var player = {
 					return pO.playlist;
 				},
 				_render: function() {
-					pO.playlist.renderLayout.innerHTML = "<h2>Играет у " + getCookie('user') || '?' + "</h2><div><button class='clear-playlist'>[Очистить]</button></div>";
+					pO.playlist.renderLayout.innerHTML = "<h2>Играет у " + (getCookie('user') || "?") + "</h2><div><button class='clear-playlist'>[Очистить]</button></div>";
 					for (var i = 0; i < pO.playlist.queue.length; i++) {
 						var elem = document.createElement('div');
 						if (pO.playlist.queue[i].selected) {
@@ -230,7 +230,7 @@ var player = {
 						track.duration = formatSecToMin(parseInt(duration));
 						dqs("#load-album").click();
 					} else if (!track.duration && pO.au.duration) {
-						var xhr = getXhr("GET", "{% url 'track-set-duration' %}", {'id': track.id, 'duration': pO.au.duration});
+						var xhr = getXhr("GET", "/track/setduration", {'id': track.id, 'duration': pO.au.duration});
 						xhr.onload = function() {
 							if (xhr.readyState == 4 && xhr.status == 200) {
 								 try {

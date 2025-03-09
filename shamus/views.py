@@ -23,6 +23,10 @@ def render_block_template(request, mdl: Artist | Album | Track | None,
     if not request.META.get('HTTP_X_SHAMUS'):
         render_data['tpl'] = (render(request, tpl, render_data)
                               .content.decode('utf-8'))
+
+        # replace '\' char to '\\' sequence for method |safe in template
+        render_data['tpl'] = render_data['tpl'].replace('\\', '\\\\')
+
         tpl = 'index.html'
 
     return render(request, tpl, render_data)

@@ -11,11 +11,5 @@
 			{% block "layout" %}{% endblock %}
 		</body>
 		<script src="{% static "js.js" %}"></script>
-		<script>
-			if (getCookie("user") != "{{ user }}") {
-				console.log('set');
-				document.cookie = "user={{ user }}";
-			}
-		</script>
 	</html>
 {% endspaceless %}

@@ -15,7 +15,7 @@ class UsedManager(models.Manager):
 class CommonModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
-    is_deleted = models.BooleanField(null=False, blank=True)
+    is_deleted = models.BooleanField(blank=True, default=False)
 
     objects = models.Manager()
 
@@ -52,10 +52,10 @@ class Track(CommonModel):
                                            blank=True, null=True)
 
     is_forbiden = models.BooleanField(verbose_name='Запрещено', blank=True,
-                                      null=True)
+                                      default=False)
 
     is_explicit = models.BooleanField(verbose_name='Откровенная лексика',
-                                      blank=True, null=True)
+                                      blank=True, default=False)
 
     def get_file_name(self):
         return os.path.basename(self.path)
@@ -186,5 +186,4 @@ class Playlist(CommonModel):
 
     track = models.ManyToManyField(verbose_name='Трек', to='Track', blank=True)
 
-    is_common = models.BooleanField(verbose_name='Виден другим',
-                                    null=True, default=False)
+    is_common = models.BooleanField(verbose_name='Виден другим', default=False)
