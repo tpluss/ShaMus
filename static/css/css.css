@@ -9,7 +9,7 @@ button {
 }
 
 ul {
-	margin-left: 1em;
+	list-style-position: inside;
 }
 
 .underline {
@@ -117,8 +117,6 @@ ul {
 }
 
 .tracklist {
-	padding: 0;
-	margin-left: 1em;
 	list-style-type: decimal;
 }
 

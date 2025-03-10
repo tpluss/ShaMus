@@ -521,9 +521,10 @@ document.body.addEventListener("click", function(e) {
 			} 
 		}
 	} else if (e.target.classList.contains("to-current-playlist-list")) {
-		for (var i = 1; i < e.target.nextSibling.nextSibling.childNodes.length; i += 2) {
-			if (e.target.nextSibling.nextSibling.childNodes[i]) {
-				e.target.nextSibling.nextSibling.childNodes[i].childNodes[7].dispatchEvent(new MouseEvent("click", {"bubbles": true}));
+		if (e.target.nextSibling.classList.contains("tracklist")) {
+			var toTracklistBtns = e.target.nextSibling.querySelectorAll(".to-current-playlist");
+			for (var i = 0; i < toTracklistBtns.length; i++) {
+				toTracklistBtns[i].dispatchEvent(new MouseEvent("click", {"bubbles": true}));
 			}
 		}
 	}
@@ -647,7 +648,7 @@ var orderAlbumField = {
 
 orderAlbumField.init();
 
-var uploadField = dqs("#file_field_id");
+var uploadField = dqs("#id_file_field");
 if (uploadField) {
 	var selectedFilesList = dqs("#selected_files");
 	if (uploadField) {
