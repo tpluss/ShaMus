@@ -2,10 +2,11 @@
 
 {% block "layout" %}
 	<div>
+		{% if disk.0 %}<h3 style="margin-bottom: 2em;">Диск: использовано {{ disk.1|filesizeformat }} | свободно {{ disk.2|filesizeformat }} | всего {{ disk.0|filesizeformat }}.</h3>{% endif %}
         {% if dst_cls == 'album' %}
-            <h2>Загрузка Треков в Альбом <a href="{% url 'album-view' dst_instance.id %}">{{ dst_instance }}</a> к Исполнителю <a href="{% url 'artist-view' dst_instance.artist.all.0.id %}">{{ dst_instance.artist.all|join:", " }}</a></h2>
+            <h2>Загрузка Треков в Альбом <a href="{% url 'album-view' dst_instance.id %}" target="_blank">{{ dst_instance }}</a> к Исполнителю <a href="{% url 'artist-view' dst_instance.artist.all.0.id %}" target="_blank">{{ dst_instance.artist.all|join:", " }}</a></h2>
         {% else %}
-            <h2>Загрузка Треков к Исполнителю <a href="{% url 'artist-view' dst_instance.id %}">{{ dst_instance.title }}</a></h2>
+            <h2>Загрузка Треков к Исполнителю <a href="{% url 'artist-view' dst_instance.id %}" target="_blank">{{ dst_instance.title }}</a></h2>
         {% endif %}
         {% if upload_result %}
 			<ul style="list-style-type: decimal; margin-top: 1em; margin-left: 2.5em;">
@@ -22,7 +23,7 @@
 			    <div><label for="{{ form.file_field.auto_id }}">{{ form.file_field.label }}</label>:&nbsp;{{ form.file_field }}</div>
 			    <input type="submit" name="upload" id="id_upload" value="Загрузить" class="form-btn" />
 			    <div class="warn">
-				    Загружая файлы, я подтверждаю, что имею права на их использование, владение, копирование. Мною не преследуются коммерческие или иные цели, направленные на извлечение прибыли от использования файлов и/или совершение деструктивных действий, причиние убытков авторам, владельцам, распространителям. Также я подтверждаю, что загружаемые файлы не входят в <a href="https://minjust.gov.ru/ru/extremist-materials/" target=_"blank">Федеральный список экстремистских материалов</a> или иной ограничивающий их распространение перечень, действующий на основании законных актов.
+				    Загружая файлы, я подтверждаю, что имею права на их использование, владение, копирование. Мною не преследуются коммерческие или иные цели, направленные на извлечение прибыли от использования файлов и/или совершение деструктивных действий, причиние убытков авторам, владельцам, распространителям. Также я подтверждаю, что загружаемые файлы не входят в <a href="https://minjust.gov.ru/ru/extremist-materials/" target="_blank">Федеральный список экстремистских материалов</a> или иной ограничивающий их распространение перечень, действующий на основании законных актов.
 			    </div>
 		    </form>
         {% endif %}

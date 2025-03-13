@@ -1,10 +1,12 @@
 import json
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .utils import numstr_list_to_int
-from .logic import (get_catalogue_contents, store_track, create_album_zip)
+from .logic import (get_catalogue_contents, store_track, create_album_zip,
+                    get_disk_space_info_by_path)
 from .models import Artist, Track, Album
 from .forms import UploadFileForm, AddArtistForm, AddAlbumForm, AddTrackForm
 
@@ -73,7 +75,8 @@ def upload(request, dst, dst_id):
     except dst_mdl.DoesNotExist:
         return redirect('/')
 
-    render_data = {'title': f'Загрузка Треков в {dst}'}
+    render_data = {'title': f'Загрузка Треков в {dst}',
+                   'disk': get_disk_space_info_by_path(settings.MEDIA_ROOT)}
 
     if request.POST:
         form = UploadFileForm(request.POST, request.FILES)

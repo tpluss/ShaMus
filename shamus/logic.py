@@ -1,5 +1,6 @@
 import os
 from io import BytesIO
+import shutil
 from django.conf import settings
 from django.core.files import File
 from .utils import (store_uploaded_file, get_md5_hexdigest,
@@ -139,3 +140,12 @@ def folder_to_shamus(path: str):
             setattr(mp3djf.file, 'file', mp3djf)
             store_res = store_track(mp3djf, album)
             print(f'{"+" if store_res else "-"}{mp3f}')
+
+
+def get_disk_space_info_by_path(path: str) -> tuple[int, int, int]:
+    total, used, free = 0, 0, 0
+
+    if os.path.exists(path):
+        total, used, free = shutil.disk_usage(path)
+
+    return total, used, free
