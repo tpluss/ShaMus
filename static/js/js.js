@@ -1,11 +1,17 @@
 var dqs = function(selector) { return document.querySelector(selector); }
 
-function getCookie(name) {
+function getCookie(name, isDisposable) {
 	var matches = document.cookie.match(new RegExp(
 		"(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
 	));
 
-	return matches ? decodeURIComponent(matches[1]) : undefined;
+	var cookieVal = matches ? decodeURIComponent(matches[1]) : undefined;
+
+	if (isDisposable && cookieVal) {
+		document.cookie = name + "=; Path=/; Domain=" + window.location.hostname + "; Max-Age=-1;";
+	}
+
+	return cookieVal;
 }
 
 var player = {
@@ -40,6 +46,7 @@ var player = {
 
 		this.volumeSlider.addEventListener("click", function(e) {
 			var percent = parseInt(percentBySliderClick(e));
+
 			if (percent == 0) {
 				pO.muteBtn.innerHTML = "&#x1f507;";
 			} else if (percent > 0 && pO.au.volume == 0) {
@@ -316,8 +323,12 @@ var player = {
 }
 var formatSecToMin = function(sec) { return ("0" + ((sec - sec % 60) / 60)).slice(-2) +  ":" + ("0" + sec % 60).slice(-2) }
 
-var percentBySliderClick = function(event) { 
-	return (100 * (event.clientX / (event.target.getBoundingClientRect().right - event.target.getBoundingClientRect().left - 10)))
+var percentBySliderClick = function(event) {
+	var ret = (100 * (event.clientX / (event.target.getBoundingClientRect().right - event.target.getBoundingClientRect().left - 10)));
+	if (ret > 100) { ret = 100 }
+	else if (ret < 0) { ret = 0 }
+
+	return ret;
 }
 
 var getLinearGradientRule = function(c1, c2, progressPercent) {
@@ -516,9 +527,11 @@ document.body.addEventListener("click", function(e) {
 				}
 				dqs("#workplace_main").innerHTML = xhr.response;
 				window.history.pushState({'render_data': xhr.response}, "", e.target.href);
+				var titleCookie = getCookie('shamus-title', true);
+				document.title = "ShaMus" + (titleCookie? (" | " + titleCookie): "");
 			} else {
 				alert("Произошла ошибка. Попробуйте позже.");
-			} 
+			}
 		}
 	} else if (e.target.classList.contains("to-current-playlist-list")) {
 		if (e.target.nextSibling.classList.contains("tracklist")) {

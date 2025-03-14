@@ -1,4 +1,5 @@
 import json
+from urllib import parse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import FileResponse, HttpResponse
@@ -31,7 +32,11 @@ def render_block_template(request, mdl: Artist | Album | Track | None,
 
         tpl = 'index.html'
 
-    return render(request, tpl, render_data)
+    resp = render(request, tpl, render_data)
+    if 'title' in render_data and request.META.get('HTTP_X_SHAMUS'):
+        resp.set_cookie('shamus-title', parse.quote(render_data['title']))
+
+    return resp
 
 
 @login_required
@@ -329,7 +334,10 @@ def edit_track_duration_from_player(request):
 @login_required
 def last_uploaded(request):
     def get_rd(_):
-        ret = {'tracks': Track.used.all().order_by('-id')[:100]}
+        ret = {'tracks': (Track.used.all()
+                          .select_related()
+                          .order_by('-id')[:100]),
+               'title': 'Последние 100 Треков'}
 
         return ret
 
