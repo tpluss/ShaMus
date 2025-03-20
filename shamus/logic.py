@@ -1,4 +1,5 @@
 import os
+import re
 from io import BytesIO
 import shutil
 from django.conf import settings
@@ -149,3 +150,76 @@ def get_disk_space_info_by_path(path: str) -> tuple[int, int, int]:
         total, used, free = shutil.disk_usage(path)
 
     return total, used, free
+
+
+def expected_mp3_file_track_name(track: Track) -> list[str]:
+    ret = []
+
+    mp3_name = track.get_file_name()
+
+    if mp3_name.endswith('.mp3'):
+        mp3_name = mp3_name[:-4]
+    ret.append(mp3_name)
+
+    if ' ' not in mp3_name:
+        mp3_name = (mp3_name.replace('-', ' ').replace('+', ' ')
+                    .replace('_', ' ').replace('  ', ' '))
+    ret.append(mp3_name) if mp3_name not in ret else None
+
+    without_artist_name = mp3_name
+    for artist_title in track.artist.all().values_list('title', flat=True):
+        if artist_title.lower() in mp3_name.lower():
+            without_artist_name = re.sub(artist_title, '', without_artist_name,
+                                         re.IGNORECASE | re.UNICODE)
+
+    if without_artist_name != mp3_name:
+        mp3_name = without_artist_name
+        ret.append(mp3_name) if mp3_name not in ret else None
+
+    idx_num_re = re.search(r'^(\d+(\.|-|\s-\s))(.+?)$', mp3_name)
+    if idx_num_re:
+        mp3_name = idx_num_re.group(3).strip()
+        ret.append(mp3_name) if mp3_name not in ret else None
+
+    if re.search(r'[а-я]|[А-Я]', mp3_name):
+        mp3_name = mp3_name.capitalize()
+    else:
+        mp3_name = mp3_name.title()
+    ret.append(mp3_name) if mp3_name not in ret else None
+
+    copy_num_re = re.search(r'^(.+?)\(\d+\)$', mp3_name)
+    if copy_num_re:
+        mp3_name = copy_num_re.group(1).strip()
+        ret.append(mp3_name) if mp3_name not in ret else None
+
+    mus_portal_re = re.search(r'([\[(])(.+?\.(com|net|ru|fm|club|kz))([)\]])',
+                              mp3_name)
+    if mus_portal_re:
+        mp3_name = mus_portal_re.group(1).strip()
+        ret.append(mp3_name) if mp3_name not in ret else None
+
+    ret.reverse()
+
+    return ret
+
+
+def get_shamus_stat(mp3_qnt: bool = True, album_qnt: bool = True,
+                    artist_qnt: bool = True, track_titles: bool = True) \
+        -> dict:
+
+    stat = {}
+
+    if mp3_qnt or track_titles:
+        stat['mp3_qnt'] = Track.used.all().count()
+
+    if album_qnt:
+        stat['album_qnt'] = Album.used.all().count()
+
+    if artist_qnt:
+        stat['artist_qnt'] = Artist.used.all().count()
+
+    if track_titles:
+        stat['track_with_title'] = Track.used.filter(title__gt='').count()
+        stat['track_without_title'] = stat['mp3_qnt'] - stat['track_with_title']
+
+    return stat

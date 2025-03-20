@@ -198,6 +198,7 @@ var player = {
 						elem.dataset.id = pO.playlist.queue[i].id
 						elem.dataset.filePath = pO.playlist.queue[i].url;
 						elem.dataset.album = pO.playlist.queue[i].album;
+						elem.dataset.albumYear = pO.playlist.queue[i].albumYear;
 
 						pO.playlist.renderLayout.appendChild(elem);
 					}
@@ -229,13 +230,17 @@ var player = {
 
 					pO.playlist._render();
 				},
-				addTrack: function(id, url, fullname, artist, album, title, duration) {
-					pO.playlist.queue_add({'id': id, 'url': url, 'fullname': fullname, 'artist': artist, 'album': album, 'title': title, 'duration': duration});
+				addTrack: function(id, url, fullname, artist, album, albumYear, title, duration) {
+					pO.playlist.queue_add({'id': id, 'url': url, 'fullname': fullname, 'artist': artist, 'album': album, 'albumYear': albumYear, 'title': title, 'duration': duration});
 				},
 				updateTrackDuration: function(track, duration) {
 					if (!track.duration && duration) {
 						track.duration = formatSecToMin(parseInt(duration));
-						dqs("#load-album").click();
+						if (dqs("#load-album")) {
+						    dqs("#load-album").click();
+						} else if (dqs("#load-artist")) {
+						    dqs("#load-artist").click();
+						}
 					} else if (!track.duration && pO.au.duration) {
 						var xhr = getXhr("GET", "/track/setduration", {'id': track.id, 'duration': pO.au.duration});
 						xhr.onload = function() {
@@ -304,7 +309,11 @@ var player = {
 		this.au.src = track.url;
 		if (!paused) { this.play(); }
 		dqs("#player_audio_data_artist").innerText = track.artist;
-		dqs("#player_audio_data_album").innerText = track.album || "-";
+		var albumTitle = track.album || "-";
+		if (track.album && track.albumYear) {
+		    albumTitle += " (" + track.albumYear + ")"
+		}
+		dqs("#player_audio_data_album").innerText = albumTitle;
 		dqs("#player_audio_data_track").innerText = track.title;
 		navigator.mediaSession.metadata = new MediaMetadata({
 			"title": track.title,
@@ -514,8 +523,12 @@ var selectQsField = {
 }
 
 document.body.addEventListener("click", function(e) {
+	if (!dqs("#workplace_main")) {
+		return;
+	}
+
 	if (e.target.dataset.filePath && e.target.classList.contains("to-current-playlist")) {
-		player.playlist.addTrack(e.target.dataset.id, e.target.dataset.filePath, e.target.dataset.fileFullName, e.target.dataset.artist, e.target.dataset.album, e.target.dataset.title, e.target.dataset.duration);
+		player.playlist.addTrack(e.target.dataset.id, e.target.dataset.filePath, e.target.dataset.fileFullName, e.target.dataset.artist, e.target.dataset.album, e.target.dataset.albumYear, e.target.dataset.title, e.target.dataset.duration);
 	} else if (e.target.tagName.toLowerCase() == "a" && !e.target.target) {
 		e.preventDefault();
 		if (!e.target.href) { return; }       
