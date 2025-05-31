@@ -14,7 +14,7 @@
 				<li>{{ res.0 }} - {% if res.1 %}{% if res.1.id %}<span style="color: orange;">Уже загружен ранее как</span>&nbsp;<a href="{% url 'track-edit' res.1.id %}">{{ res.1.get_full_name }}</a>{% else %}<span style="color: green;">&#x2611;</span>{% endif %}{% else %}<span style="color: red;">&#x2612;</span>{% endif %}</li>
 			{% endfor %}
 			</ul>
-		    <h3 style="margin-top: 1em;"><a href="{% url 'upload' dst_cls dst_instance.id %}">Загрузить ещё?</h3>
+		    <h3 style="margin-top: 1em;"><a href="{% url 'upload' dst_cls dst_instance.id %}">Загрузить ещё?</a></h3>
         {% else %}
             {% if form.errors %}<div class="warn">{{ form.file_field.errors }}</div>{% endif %}
             <form method="POST" action="{% url 'upload' dst_cls dst_instance.id %}" enctype="multipart/form-data" style="margin-top: 1em;">

@@ -129,6 +129,14 @@ ul {
 	background: darkorange;
 }
 
+.playlist-act-btn {
+	min-width: 5em;
+	max-width: 25%;
+	height: 2em;
+	padding: 0 0.5em;
+	margin-right: 0.5em;
+}
+
 .to-current-playlist {
 	display: inline;
 	cursor: pointer;

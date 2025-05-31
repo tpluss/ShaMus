@@ -177,15 +177,19 @@ var player = {
 							} else if (e.target.classList.contains("playlist-track-btn-pl")) {
 								pO.playlist.play(pO.playlist.queue[clickedIdx]);
 							}
-						} else if (e.target.classList.contains("clear-playlist")) {
+						} else if (e.target.classList.contains("playlist-clear")) {
 							pO.playlist.queue_clear();
+						} else if (e.target.classList.contains("playlist-shuffle")) {
+							pO.playlist.queue_shuffle();
+						} else if (e.target.classList.contains("playlist-reverse")) {
+							pO.playlist.queue_reverse();
 						}
 					});
 
 					return pO.playlist;
 				},
 				_render: function() {
-					pO.playlist.renderLayout.innerHTML = "<h2>Играет у " + (getCookie('user') || "?") + "</h2><div><button class='clear-playlist'>[Очистить]</button></div>";
+					pO.playlist.renderLayout.innerHTML = "<h2>Играет у " + (getCookie('user') || "?") + "</h2><div><button class='playlist-act-btn playlist-clear'>[Очистить]</button><button class='playlist-act-btn playlist-shuffle'>[Перемешать]</button><button class='playlist-act-btn playlist-reverse'>[Перевернуть]</button></div>";
 					for (var i = 0; i < pO.playlist.queue.length; i++) {
 						var elem = document.createElement('div');
 						if (pO.playlist.queue[i].selected) {
@@ -205,6 +209,36 @@ var player = {
 				},
 				queue_clear: function() { pO.playlist.queue = []; pO.playlist._render(); },
 				queue_add: function(track) { pO.playlist.queue.push(track); pO.playlist._render(); },
+				queue_shuffle: function() {
+					var qnt = null;
+					var idx = null;
+					var tmp = null;
+					var genIdx = function() { idx = (Math.floor(Math.random() * pO.playlist.queue.length)); return idx; };
+					var new_order = [];
+					for (var i = 0; i < pO.playlist.queue.length; i++) {
+						qnt = 0;
+						while (new_order.indexOf(genIdx()) > -1) {
+							qnt++;
+							if (qnt > 1000) {
+								idx = new_order.length - 1;
+							}
+						}
+						new_order.push(idx);
+					}
+
+					for (var i = 0; i < new_order.length; i++) {
+						new_order[i] = pO.playlist.queue[new_order[i]];
+					}
+
+					pO.playlist.queue = new_order;
+
+					pO.playlist._render();
+				},
+				queue_reverse: function() {
+					pO.playlist.queue.reverse();
+
+					pO.playlist._render();
+				}, 
 				queue_remove: function(plIdx) {
 					pO.playlist.queue.splice(plIdx, 1);
 
