@@ -45,8 +45,8 @@ class Track(CommonModel):
     file_hash = models.CharField(verbose_name='md5', max_length=32)
 
     path = models.FilePathField(
-            verbose_name='Путь на диске', path=settings.MEDIA_ROOT,
-            match="*.mp3", max_length=1000)
+            verbose_name='Путь на диске', path=str(settings.MEDIA_ROOT),
+            match='.mp3', recursive=True, allow_files=True, max_length=1000)
 
     duration = models.PositiveIntegerField(verbose_name='Длительность',
                                            blank=True, null=True)
@@ -60,6 +60,9 @@ class Track(CommonModel):
     def get_file_name(self):
         return os.path.basename(self.path)
 
+    def get_full_path(self):
+        return os.path.join(str(settings.BASE_DIR), self.path)
+
     def get_name(self):
         return (getattr(self, 'title', self.get_file_name()) or
                 self.get_file_name())
@@ -69,14 +72,14 @@ class Track(CommonModel):
 
     def get_artists_data(self):
         artists_data = self.artist.all()
-        
+
         return zip(
             ', '.join(artists_data.values_list('title', flat=True)),
             list(artists_data.values_list('id', flat=True))
         )
 
     def get_full_name(self, with_ext=True):
-        artists = self.get_artists_title() 
+        artists = self.get_artists_title()
         ret = f'{artists} - {self.get_name()}'
 
         if not with_ext and ret.endswith('.mp3'):

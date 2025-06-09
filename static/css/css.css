@@ -16,6 +16,10 @@ ul {
 	text-decoration: underline;
 }
 
+.b {
+	font-weight: bolder;
+}
+
 .red {
 	color: red;
 }
