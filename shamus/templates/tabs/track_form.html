@@ -44,12 +44,13 @@
 						{% endif %}
 						{{ field }}
 						{% if field.name == 'title' %}
-							{% for name in expected_names %}
-								<span class="link-btn" onclick="dqs('#{{ form.title.auto_id }}').value = this.innerText; dqs('#{{ form.title.auto_id }}').focus();">{{ name }}</span>&nbsp;
-							{% endfor %}
-							<br />
-							<a href="https://google.com/search?q={{ track.get_file_name }}" target="_blank">Google</a>&nbsp;<a href="https://ya.ru/search?text={{ track.get_file_name }}" target="_blank">Yandex</a>
-							<br />
+							<div>
+								{% for name in expected_names %}
+									<span class="link-btn" onclick="dqs('#{{ form.title.auto_id }}').value = this.innerText; dqs('#{{ form.title.auto_id }}').focus();">{{ name }}</span>&nbsp;
+								{% endfor %}
+								<br />
+								<a href="https://google.com/search?q={{ track.get_file_name }}" target="_blank">Google</a>&nbsp;<a href="https://ya.ru/search?text={{ track.get_file_name }}" target="_blank">Yandex</a>
+							</div>
 						{% endif %}
 						{% if field.help_text %}
 							<br />{{ field.help_text }}

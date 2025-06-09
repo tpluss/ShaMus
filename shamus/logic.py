@@ -169,8 +169,9 @@ def expected_mp3_file_track_name(track: Track) -> list[str]:
     without_artist_name = mp3_name
     for artist_title in track.artist.all().values_list('title', flat=True):
         if artist_title.lower() in mp3_name.lower():
-            without_artist_name = re.sub(artist_title, '', without_artist_name,
-                                         re.IGNORECASE | re.UNICODE)
+            without_artist_name = (re.sub(artist_title, '', without_artist_name,
+                                          flags=re.IGNORECASE | re.UNICODE)
+                                   .strip())
 
     if without_artist_name != mp3_name:
         mp3_name = without_artist_name.replace('- ', '').strip()
