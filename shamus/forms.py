@@ -17,7 +17,7 @@ class MultipleFileField(forms.FileField):
 
     def clean(self, data, initial=None):
         single_file_clean = super().clean
-        
+
         def single_ext_clean(f):
             is_clean = False
             for ext in self.allowed_extensions:
@@ -94,8 +94,30 @@ class AddTrackForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-      
+
         self.fields['artist'].queryset = kwargs['initial']['artist']
         self.fields['artist'].widget.attrs['class'] = 'sfqs'
         self.fields['title'].widget.attrs['size'] = '200'
         self.fields['duration'].widget.attrs['size'] = '5'
+
+
+class TrackRenamerForm(forms.ModelForm):
+    class Meta:
+        model = Track
+        fields = ['title']
+
+    track = forms.ModelChoiceField(queryset=Track.used.none(),
+                                   widget=forms.HiddenInput)
+
+    def __init__(self, *args, **kwargs):
+        track_id = kwargs.pop('track_id', None)
+
+        super().__init__(*args, **kwargs)
+
+        self.fields['title'].widget.attrs.update(
+            {'size': '200', 'autofocus': 'autofocus'})
+
+        if track_id:
+            self.fields['track'].queryset = Track.used.filter(id=track_id)
+            self.fields['track'].initial = track_id
+            self.fields['title'].initial = self.fields['track'].queryset[0].title

@@ -29,7 +29,7 @@
 			{% for field in form.visible_fields %}
 				{% if field.name == 'title' %}
 					<tr>
-						<td colspan="2">Имя файла на диске: {{ track.get_file_name }}</td>
+						<td colspan="2">Имя файла на диске: {{ track.get_file_name }}</td>						
 					</tr>
 				{% endif %}
 				<tr>
@@ -43,6 +43,14 @@
 							</ul>
 						{% endif %}
 						{{ field }}
+						{% if field.name == 'title' %}
+							{% for name in expected_names %}
+								<span class="link-btn" onclick="dqs('#{{ form.title.auto_id }}').value = this.innerText; dqs('#{{ form.title.auto_id }}').focus();">{{ name }}</span>&nbsp;
+							{% endfor %}
+							<br />
+							<a href="https://google.com/search?q={{ track.get_file_name }}" target="_blank">Google</a>&nbsp;<a href="https://ya.ru/search?text={{ track.get_file_name }}" target="_blank">Yandex</a>
+							<br />
+						{% endif %}
 						{% if field.help_text %}
 							<br />{{ field.help_text }}
 						{% endif %}

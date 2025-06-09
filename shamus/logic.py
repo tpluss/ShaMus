@@ -173,7 +173,7 @@ def expected_mp3_file_track_name(track: Track) -> list[str]:
                                          re.IGNORECASE | re.UNICODE)
 
     if without_artist_name != mp3_name:
-        mp3_name = without_artist_name
+        mp3_name = without_artist_name.replace('- ', '').strip()
         ret.append(mp3_name) if mp3_name not in ret else None
 
     idx_num_re = re.search(r'^(\d+(\.|-|\s-\s))(.+?)$', mp3_name)
@@ -192,11 +192,12 @@ def expected_mp3_file_track_name(track: Track) -> list[str]:
         mp3_name = copy_num_re.group(1).strip()
         ret.append(mp3_name) if mp3_name not in ret else None
 
-    mus_portal_re = re.search(r'([\[(])(.+?\.(com|net|ru|fm|club|kz))([)\]])',
-                              mp3_name)
-    if mus_portal_re:
-        mp3_name = mus_portal_re.group(1).strip()
-        ret.append(mp3_name) if mp3_name not in ret else None
+    mp3_name = re.sub(r'\(.+?(\.(com|ru|net|org|club|kz|fm))\)', '',
+                      mp3_name, re.IGNORECASE | re.UNICODE)
+    ret.append(mp3_name) if mp3_name not in ret else None
+
+    mp3_name = re.sub(r'\s\d+$', '', mp3_name)
+    ret.append(mp3_name) if mp3_name not in ret else None
 
     ret.reverse()
 

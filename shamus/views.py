@@ -1,4 +1,5 @@
 import json
+import random
 from urllib import parse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -6,10 +7,10 @@ from django.http import FileResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .utils import numstr_list_to_int
-from .logic import (get_catalogue_contents, store_track, create_album_zip,
-                    get_disk_space_info_by_path)
+from . import logic
 from .models import Artist, Track, Album
-from .forms import UploadFileForm, AddArtistForm, AddAlbumForm, AddTrackForm
+from .forms import (UploadFileForm, AddArtistForm, AddAlbumForm, AddTrackForm,
+                    TrackRenamerForm)
 
 
 def render_block_template(request, mdl: Artist | Album | Track | None,
@@ -44,7 +45,7 @@ def catalogue(request):
     tpl = 'blocks/catalogue.html'
 
     def get_rd(_):
-        ret = get_catalogue_contents()
+        ret = logic.get_catalogue_contents()
         ret.update({'title': 'Каталог'})
 
         return ret
@@ -59,7 +60,7 @@ def catalogue_by_first_symbol(request, symbol):
     def get_rd(_):
         return {
             'title': f'Исполнители на "{symbol.upper()}"',
-            'artists': (Artist.used.filter(title__startswith=symbol)
+            'artists': (Artist.used.filter(title__istartswith=symbol)
                         .order_by('title')),
             'symbol': symbol.upper()}
 
@@ -81,7 +82,8 @@ def upload(request, dst, dst_id):
         return redirect('/')
 
     render_data = {'title': f'Загрузка Треков в {dst}',
-                   'disk': get_disk_space_info_by_path(settings.MEDIA_ROOT)}
+                   'disk': logic.get_disk_space_info_by_path(
+                       settings.MEDIA_ROOT)}
 
     if request.POST:
         form = UploadFileForm(request.POST, request.FILES)
@@ -91,7 +93,7 @@ def upload(request, dst, dst_id):
 
             for f in form.cleaned_data['file_field']:
                 render_data['upload_result'].append(
-                        (f._name, store_track(f, dst)))
+                        (f._name, logic.store_track(f, dst)))
     else:
         form = UploadFileForm()
 
@@ -261,6 +263,8 @@ def edit_track(request, track_id):
 
     render_data = {'title': 'Редактирование сведений о Треке',
                    'form': form, 'track': track}
+    render_data['expected_names'] = logic.expected_mp3_file_track_name(
+        render_data['track'])
 
     tpl = 'tabs/track_form.html'
 
@@ -283,11 +287,11 @@ def download(_, source, source_id):
 
     if source == 'track':
         return FileResponse(
-            open(instance.path, 'rb'),
+            open(instance.get_full_path(), 'rb'),
             as_attachment=True,
             filename=instance.get_full_name(with_ext=True) or 'test.mp3')
     elif source == 'album':
-        return FileResponse(create_album_zip(instance),
+        return FileResponse(logic.create_album_zip(instance),
                             as_attachment=True,
                             filename=f'{instance.__str__()}.zip')
 
@@ -343,3 +347,76 @@ def last_uploaded(request):
 
     return render_block_template(request, None, None,
                                  'blocks/last_uploaded.html', get_rd)
+
+
+@login_required
+def rename_tracks(request, track_id=None):
+    tpl = 'tabs/rename_tracks_form.html'
+
+    render_data = {'title': 'Режим переименования Треков'}
+
+    if request.POST:
+        if request.POST.get('pass'):
+            return redirect(reverse('track-renamer'))
+
+        try:
+            track_id = int(request.POST.get('track'))
+        except ValueError:
+            return redirect(reverse('track-renamer'))
+
+        form = TrackRenamerForm(request.POST, track_id=track_id)
+
+        is_save = (request.POST.get('save_random') or
+                   request.POST.get('save_next'))
+
+        if is_save:
+            if form.is_valid():
+                track = form.cleaned_data['track']
+                track.title = form.cleaned_data['title']
+                track.save()
+
+                request.POST = request.POST.copy()
+                if request.POST.get('save_next'):
+                    track_id = (Track.used.filter(id__gt=track.id, title='')
+                                .values_list('id', flat=True)[:1])
+                    if track_id:
+                        track_id = track_id[0]
+                        request.POST = {'track': track_id}
+                    else:
+                        return redirect(reverse('track-renamer'))
+                else:
+                    request.POST = {}
+
+                return rename_tracks(request)
+        else:
+            if track_id:
+                try:
+                    render_data['track'] = Track.used.get(id=track_id)
+                except Track.DoesNotExist:
+                    return redirect(reverse('track-renamer'))
+    else:
+        if track_id is None:
+            tracks = Track.used.filter(title='')
+            if tracks.count():
+                track = tracks[random.randint(0, tracks.count() - 1)]
+                track_id = track.id
+            else:
+                return redirect(reverse('track-renamer'))
+
+        try:
+            track = Track.used.get(id=track_id)
+        except Track.DoesNotExist:
+            return redirect(reverse('track-renamer'))
+
+        form = TrackRenamerForm(track_id=track_id)
+        render_data['track'] = track
+
+    render_data['form'] = form
+    render_data['track_stat'] = logic.get_shamus_stat(album_qnt=False,
+                                                      artist_qnt=False)
+
+    if 'track' in render_data:
+        render_data['expected_names'] = logic.expected_mp3_file_track_name(
+            render_data['track'])
+
+    return render(request, tpl, render_data)
