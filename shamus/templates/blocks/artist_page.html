@@ -5,7 +5,7 @@
 	{% if albums %}
 		<ul>
 			{% for album in albums %}
-				<li><a href="{% url 'album-view' album.id %}">{{ album }}</a></li>
+				<li><a href="{% url 'album-view' album.id %}">{{ album }}</a>{% with album_duration=album.get_duration %}{% if album_duration.0 %}&nbsp;<span class="small-text">({{ album_duration.0 }}{% if album_duration.0 and album_duration.1 %} + ???{% endif %})</span>{% endif %}{% endwith %}</li>
 			{% endfor %}
 		</ul>
 	{% else %}

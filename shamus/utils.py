@@ -104,3 +104,20 @@ def create_zip_arch(full_path: str) -> BytesIO:
 
 def is_mp3_ext(path: str):
     return path.endswith('.mp3')
+
+
+def seconds_to_duration_str(duration: int, delimeter: str = ':') -> str:
+    if duration < 1:
+        raise TypeError('Duration must be positive int!')
+
+    minutes = duration // 60
+    seconds = duration % 60
+
+    hours = minutes // 60
+    if hours:
+        minutes -= hours * 60
+        ret = f'{hours:02d}{delimeter}{minutes:02d}{delimeter}{seconds:02d}'
+    else:
+        ret = f'{minutes:02d}{delimeter}{seconds:02d}'
+
+    return ret

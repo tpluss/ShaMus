@@ -4,7 +4,14 @@
 			{% with album_artist=album.artist.all %} 
 				<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;{% for artist in album_artist %}<a href="{% url 'catalogue-page-first-symbol' artist.title.0 %}">{{ artist.title.0 }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}&nbsp;&gt;&nbsp;{% for artist in album.artist.all %}<a href="{% url 'artist-view' artist.id %}">{{ artist.title }}{% if not forloop.last %}, {% endif %}</a>{% endfor %}</h2>
 			{% endwith %}
-			<h2>Альбом: {{ album.title_year }}</h2>
+			<h2>Альбом: {{ album.title_year }}{% with album_duration=album.get_duration %}{% if album_duration.0 %} <span class="small-text">({{ album_duration.0 }}{% if album_duration.0 and album_duration.1 %} + ???{% endif %})</span>{% endif %}{% endwith %}</h2>
+			{% with siblings=album.get_sibling_albums %}
+				{% if siblings.0 or siblings.1 %}
+					<div class="small-text">
+						{% if siblings.0 %}<a href="{% url 'album-view' siblings.0.id %}">&laquo; {{ siblings.0.year }} {{ siblings.0.title|truncatechars:15 }}</a>{% endif %}{% if siblings.1 %}&nbsp;<a href="{% url 'album-view' siblings.1.id %}">{{ siblings.1.year }} {{ siblings.1.title|truncatechars:15 }} &raquo;</a>{% endif %}
+					</div>
+				{% endif %}
+			{% endwith %}
 			<div>
 				<a href="{% url 'album-view' album.id %}" id="load-album">&#x21bb;</a>
 				&nbsp;<a href="{% url 'download' 'album' album.id %}" target="_blank">&#x2913;</a>

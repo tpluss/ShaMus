@@ -4,7 +4,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .utils import construct_album_folder_name, get_md5_hexdigest
+from .utils import (construct_album_folder_name, get_md5_hexdigest,
+                    seconds_to_duration_str)
 
 
 class UsedManager(models.Manager):
@@ -94,7 +95,7 @@ class Track(CommonModel):
 
     def get_duration_min(self):
         if self.duration:
-            return f'{self.duration // 60:02d}:{self.duration % 60:02d}'
+            return seconds_to_duration_str(self.duration)
 
         return None
 
@@ -123,6 +124,9 @@ class Artist(CommonModel):
             'track__id', flat=True)
 
         return [track for track in tracks if track.id not in album_tracks_id]
+
+    def get_albums(self, order_by: str = '-year'):
+        return Album.used.filter(artist=self.id).order_by(order_by)
 
 
 class Album(CommonModel):
@@ -181,6 +185,32 @@ class Album(CommonModel):
 
     def get_track_order(self):
         return list(map(int, self.track_order.split(',')[:-1]))
+
+    def get_duration(self, mode: str = ''):
+        duration = 0
+
+        tracks_duration = self.track.all().values_list('duration', flat=True)
+
+        if mode == 'strict':
+            if None in tracks_duration:
+                return [None, None]
+
+        for td in tracks_duration:
+            if td:
+                duration += td
+
+        return [seconds_to_duration_str(duration) if duration else None,
+                None in tracks_duration]
+
+    def get_sibling_albums(self):
+        siblings = self.artist.all()[0].get_albums(order_by='year')
+
+        sa_ids = list(siblings.values_list('id', flat=True))
+        cur_idx = sa_ids.index(self.id)
+        prev_alb = siblings[cur_idx-1] if cur_idx > 0 else None
+        next_alb = siblings[cur_idx+1] if cur_idx < (len(sa_ids) - 1) else None
+
+        return prev_alb, next_alb
 
 
 class Playlist(CommonModel):

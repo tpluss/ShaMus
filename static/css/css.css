@@ -24,6 +24,10 @@ ul {
 	color: red;
 }
 
+.small-text {
+	font-size: 0.5em;
+}
+
 .green {
 	color: green;
 }
