@@ -1,15 +1,33 @@
 {% spaceless %}
-	<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;<span>{{ symbol }}</span>&nbsp;<a href="{% url 'catalogue-page-first-symbol' symbol %}">&#x21bb;</a></h2>
-	<div>
-		{% if artists %}
-			<ul>
-				{% for artist in artists %}
-					<li><a href="{% url 'artist-view' artist.id %}">{{ artist }}</a></li>
-				{% endfor %}
-			</ul>
-		{% endif %}
-	</div>
-	<div>
-		Не нашли нужного? Тогда <a href="{% url 'artist-add' %}" target="_blank">добавьте Исполнителя</a>.
-	</div>
+	{% if symbol %}
+		<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;<span>{{ symbol }}</span>&nbsp;<a href="{% url 'catalogue-page-first-symbol' symbol %}">&#x21bb;</a></h2>
+		<div>
+			{% if artists %}
+				<ul>
+					{% for artist in artists %}
+						<li><a href="{% url 'artist-view' artist.id %}">{{ artist }}</a></li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+		</div>
+		<div>
+			Не нашли нужного? Тогда <a href="{% url 'artist-add' %}" target="_blank">добавьте Исполнителя</a>.
+		</div>
+	{% elif albums is not None %}
+		<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;<span>Альбомы в жанре: {{ genre.title }}</span></h2>
+		<div>
+			{% if albums %}
+				<ul>
+					{% for album in albums %}
+						<li>
+							<a href="{% url 'album-view' album.id %}">{{ album }}</a>
+							<div class="small-text mt02">
+								Длительность: {% with album_duration=album.get_duration %}<span class="b">{% if album_duration.0 %}{{ album_duration.0 }}{% if album_duration.0 and album_duration.1 %} + ???{% endif %}{% else %}???{% endif %}</span>{% endwith %}&nbsp;<span>Жанры: {% for genre in album.genre.all %}<a class="album-genre" href="{% url 'catalogue-page-genre' genre.id %}">{{ genre.title }}</a>{% empty %}&mdash;{% endfor %}</span>
+							</div>
+						</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+		</div>
+	{% endif %}
 {% endspaceless %}

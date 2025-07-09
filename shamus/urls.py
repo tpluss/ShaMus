@@ -43,7 +43,13 @@ urlpatterns = [
     path('search/field', views.search_field, name='search-field'),
     path('last', views.last_uploaded, name='last-uploaded'),
     re_path(r'track/renamer/(?P<track_id>\d+)?', views.rename_tracks,
-            name='track-renamer')
+            name='track-renamer'),
+    path('genre/add', views.add_genre, name='genre-add'),
+    re_path(r'^genre/edit/(?P<genre_id>\d+)/$', views.edit_genre,
+            name='genre-edit'),
+    path(r'genre/list', views.list_genre, name='genre-list'),
+    re_path(r'^genre/(?P<genre_id>\d+)/$', views.catalogue_by_genre,
+            name='catalogue-page-genre'),
 ]
 
 if settings.DEBUG:

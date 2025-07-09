@@ -5,7 +5,12 @@
 	{% if albums %}
 		<ul>
 			{% for album in albums %}
-				<li><a href="{% url 'album-view' album.id %}">{{ album }}</a>{% with album_duration=album.get_duration %}{% if album_duration.0 %}&nbsp;<span class="small-text">({{ album_duration.0 }}{% if album_duration.0 and album_duration.1 %} + ???{% endif %})</span>{% endif %}{% endwith %}</li>
+				<li>
+					<a href="{% url 'album-view' album.id %}">{{ album.title }} ({{ album.year }})</a>
+					<div class="small-text mt02">
+						Длительность: {% with album_duration=album.get_duration %}<span class="b">{% if album_duration.0 %}{{ album_duration.0 }}{% if album_duration.0 and album_duration.1 %} + ???{% endif %}{% else %}???</span>{% endif %}{% endwith %}&nbsp;<span>Жанры: {% for genre in album.genre.all %}<a class="album-genre" href="{% url 'catalogue-page-genre' genre.id %}">{{ genre.title }}</a>{% empty %}&mdash;{% endfor %}</span>
+					</div>
+				</li>
 			{% endfor %}
 		</ul>
 	{% else %}

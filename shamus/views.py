@@ -8,9 +8,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from .utils import numstr_list_to_int
 from . import logic
-from .models import Artist, Track, Album
+from .models import Artist, Track, Album, Genre
 from .forms import (UploadFileForm, AddArtistForm, AddAlbumForm, AddTrackForm,
-                    TrackRenamerForm)
+                    TrackRenamerForm, AddGenreForm)
 
 
 def render_block_template(request, mdl: Artist | Album | Track | None,
@@ -306,6 +306,8 @@ def search_field(request):
     if not qs_query:
         qs_query, qs_mdl = request.GET.get('track'), Track
     if not qs_query:
+        qs_query, qs_mdl = request.GET.get('genre'), Genre
+    if not qs_query:
         return HttpResponse('unknown model')
 
     ret = qs_mdl.used.filter(title__icontains=qs_query)
@@ -420,3 +422,84 @@ def rename_tracks(request, track_id=None):
             render_data['track'])
 
     return render(request, tpl, render_data)
+
+
+@login_required
+def add_genre(request):
+    render_data = {'title': f'Добавление Жанра'}
+
+    if request.POST:
+        form = AddGenreForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+
+            return redirect(reverse('genre-list', args=()))
+    else:
+        form = AddGenreForm()
+
+    render_data['form'] = form
+
+    tpl = 'tabs/genre_form.html'
+
+    return render(request, tpl, render_data)
+
+
+@login_required()
+def edit_genre(request, genre_id):
+    try:
+        genre = Genre.used.get(id=genre_id)
+    except Genre.DoesNotExist:
+        return redirect('/')
+
+    render_data = {'title': f'Редактирование Жанра {genre}'}
+
+    if request.POST:
+        form = AddGenreForm(request.POST, instance=genre)
+
+        if form.is_valid():
+            form.save()
+
+            return redirect(reverse('genre-list', args=()))
+    else:
+        form = AddGenreForm(instance=genre)
+
+    render_data['form'] = form
+
+    tpl = 'tabs/genre_form.html'
+
+    return render(request, tpl, render_data)
+
+
+@login_required()
+def list_genre(request):
+    tpl = 'tabs/genre_list.html'
+
+    genres = {genre.title: genre.id for genre in Genre.used.all()}
+    genres_data = logic.get_genre_stat()
+    for k, v in genres_data.items():
+        # genre_id, genre_album_qnt
+        genres_data[k] = [genres[k], v]
+
+    render_data = {'title': 'Просмотр Жанров', 'genres_data': genres_data}
+
+    return render(request, tpl, render_data)
+
+
+@login_required
+def catalogue_by_genre(request, genre_id):
+    try:
+        genre = Genre.used.get(id=genre_id)
+    except Genre.DoesNotExist:
+        return redirect(reverse('catalogue', args=()))
+
+    tpl = 'blocks/catalogue_page.html'
+
+    def get_rd(_):
+        return {
+            'title': f'Альбомы в Жанре "{genre.title}"',
+            'genre': genre,
+            'albums': (Album.used.filter(genre=genre).order_by('title')),
+        }
+
+    return render_block_template(request, None, None, tpl, get_rd)

@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.files import File
 from .utils import (store_uploaded_file, get_md5_hexdigest,
                     construct_album_folder_name, create_zip_arch, is_mp3_ext)
-from .models import Track, Artist, Album
+from .models import Track, Artist, Album, Genre
 
 
 def construct_artist_folder_path(title: str) -> str:
@@ -225,3 +225,21 @@ def get_shamus_stat(mp3_qnt: bool = True, album_qnt: bool = True,
         stat['track_without_title'] = stat['mp3_qnt'] - stat['track_with_title']
 
     return stat
+
+
+def get_genre_stat(include_empty=True):
+    ret = {}
+
+    for album in Album.used.all():
+        for genre in album.genre.all():
+            if genre.title not in ret:
+                ret[genre.title] = 0
+
+            ret[genre.title] += 1
+
+    if include_empty:
+        for genre in (Genre.used.all().exclude(title__in=ret.keys())
+                      .values_list('title', flat=True)):
+            ret[genre] = 0
+
+    return ret

@@ -738,7 +738,13 @@ if (uploadField) {
 
 var searchQsFields = document.getElementsByClassName("sfqs");
 for (var i = 0; i < searchQsFields.length; i++) {
-	selectQsField.init(searchQsFields[i], "artist");
+	var mdl_id = "";
+	if (searchQsFields[i].id == "id_artist") {
+		mdl_id = "artist";
+	} else if (searchQsFields[i].id == "id_genre") {
+		mdl_id = "genre";
+	}
+	selectQsField.init(searchQsFields[i], mdl_id);
 }
 
 window.addEventListener("popstate", function(e) {

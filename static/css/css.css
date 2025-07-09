@@ -3,6 +3,10 @@
 	padding: 0;
 }
 
+.mt02 {
+	margin-top: 0.2em;
+}
+
 button {
 	min-width: 1.5em;
 	min-height: 1.5em;
@@ -160,4 +164,13 @@ ul {
 .link-btn {
 	cursor: pointer;
 	text-decoration: underline;
+}
+
+.album-genre {
+	margin-left: 0.25em;
+	&:first-child{
+        margin-left: 0;
+    }
+	padding: 0.25em;
+	background-color: #d5cfcf;
 }

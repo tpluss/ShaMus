@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Artist, Album, Track
+from .models import Artist, Album, Track, Genre
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -76,12 +76,13 @@ class AddArtistForm(forms.ModelForm):
 class AddAlbumForm(forms.ModelForm):
     class Meta:
         model = Album
-        fields = ['artist', 'year', 'title', 'track_order']
+        fields = ['artist', 'year', 'title', 'genre', 'track_order']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['artist'].widget.attrs['class'] = 'sfqs'
+        self.fields['genre'].widget.attrs['class'] = 'sfqs'
         self.fields['title'].widget.attrs['size'] = '200'
         self.fields['track_order'].widget.attrs['cols'] = '75'
         self.fields['track_order'].widget.attrs['rows'] = '3'
@@ -120,4 +121,16 @@ class TrackRenamerForm(forms.ModelForm):
         if track_id:
             self.fields['track'].queryset = Track.used.filter(id=track_id)
             self.fields['track'].initial = track_id
-            self.fields['title'].initial = self.fields['track'].queryset[0].title
+            self.fields['title'].initial = (self.fields['track'].queryset[0].
+                                            title)
+
+
+class AddGenreForm(forms.ModelForm):
+    class Meta:
+        model = Genre
+        fields = ['title']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['title'].widget.attrs['size'] = '200'

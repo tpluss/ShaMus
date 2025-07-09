@@ -141,6 +141,8 @@ class Album(CommonModel):
 
     track_order = models.TextField(verbose_name='Порядок Треков', blank=True)
 
+    genre = models.ManyToManyField(verbose_name='Жанр', to='Genre', blank=True)
+
     def __str__(self):
         artists_name = ', '.join([a.title for a in self.artist.all()])
 
@@ -220,3 +222,10 @@ class Playlist(CommonModel):
     track = models.ManyToManyField(verbose_name='Трек', to='Track', blank=True)
 
     is_common = models.BooleanField(verbose_name='Виден другим', default=False)
+
+
+class Genre(CommonModel):
+    title = models.CharField(verbose_name='Жанр', max_length=512, unique=True)
+
+    def __str__(self):
+        return self.title

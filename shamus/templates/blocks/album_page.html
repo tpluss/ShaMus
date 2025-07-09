@@ -4,7 +4,8 @@
 			{% with album_artist=album.artist.all %} 
 				<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;{% for artist in album_artist %}<a href="{% url 'catalogue-page-first-symbol' artist.title.0 %}">{{ artist.title.0 }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}&nbsp;&gt;&nbsp;{% for artist in album.artist.all %}<a href="{% url 'artist-view' artist.id %}">{{ artist.title }}{% if not forloop.last %}, {% endif %}</a>{% endfor %}</h2>
 			{% endwith %}
-			<h2>Альбом: {{ album.title_year }}{% with album_duration=album.get_duration %}{% if album_duration.0 %} <span class="small-text">({{ album_duration.0 }}{% if album_duration.0 and album_duration.1 %} + ???{% endif %})</span>{% endif %}{% endwith %}</h2>
+			<h2>Альбом: {{ album.title_year }}</h2>
+			<div class="small-text">Длительность: {% with album_duration=album.get_duration %}<span class="b">{% if album_duration.0 %}{{ album_duration.0 }}{% if album_duration.0 and album_duration.1 %} + ???{% endif %}{% else %}???{% endif %}</span>{% endwith %} Жанры: {% for genre in album.genre.all %}<a class="album-genre" href="{% url 'catalogue-page-genre' genre.id %}">{{ genre.title }}</a>{% empty %}&mdash;{% endfor %}</div>
 			{% with siblings=album.get_sibling_albums %}
 				{% if siblings.0 or siblings.1 %}
 					<div class="small-text">
