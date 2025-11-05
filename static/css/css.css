@@ -156,9 +156,7 @@ ul {
 }
 
 .to-current-playlist-list {
-	display: inline;
-	cursor: pointer;
-	font-size: 2em;
+	font-size: 1em;
 }
 
 .link-btn {
@@ -173,4 +171,13 @@ ul {
     }
 	padding: 0.25em;
 	background-color: #d5cfcf;
+}
+
+#catalogue-table {
+    text-align: center;
+}
+
+#catalogue-table td {
+    display: inline-block;
+    min-width: 2em;
 }
