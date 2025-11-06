@@ -189,15 +189,15 @@ var player = {
 					return pO.playlist;
 				},
 				_render: function() {
-					pO.playlist.renderLayout.innerHTML = "<h2>Играет у " + (getCookie('user') || "?") + "</h2><div><button class='playlist-act-btn playlist-clear'>[Очистить]</button><button class='playlist-act-btn playlist-shuffle'>[Перемешать]</button><button class='playlist-act-btn playlist-reverse'>[Перевернуть]</button></div>";
+					pO.playlist.renderLayout.innerHTML = "<h2>Играет у " + (getCookie('user') || "?") + "</h2><div class='mb02'><button class='playlist-act-btn playlist-clear'>Очистить &cross;</button><button class='playlist-act-btn playlist-shuffle'>Перемешать &#128256;</button><button class='playlist-act-btn playlist-reverse'>Перевернуть &#8634;</button></div>";
 					for (var i = 0; i < pO.playlist.queue.length; i++) {
 						var elem = document.createElement('div');
 						if (pO.playlist.queue[i].selected) {
 							elem.id = "playlist-cur-track";
 							elem.appendChild(dqs("#player_track_duration_timer").cloneNode());
 						}
-						elem.innerHTML = "<span>" + pO.playlist.queue[i].fullname + "</span>" + (pO.playlist.queue[i].duration? ("<span style='margin-left: 0.5em;'>" + pO.playlist.queue[i].duration + "</span>"): "");
-						elem.innerHTML += "<div><button class='playlist-track-btn playlist-track-btn-pl'" + (pO.playlist.queue[i].selected? " disabled": "") + ">&vrtri;</button><button class='playlist-track-btn playlist-track-btn-rm'>&#x292B;</button><button class='playlist-track-btn playlist-track-btn-up'>&uarr;</button><button class='playlist-track-btn playlist-track-btn-dn'>&darr;</button></div>";
+						elem.innerHTML = "<a href='/" + (pO.playlist.queue[i].sourceData.startsWith('album')? "album": "artist") + "/" + pO.playlist.queue[i].sourceData.split('_')[1] + "'>" + pO.playlist.queue[i].fullname + "</a>" + (pO.playlist.queue[i].duration? ("<span style='margin-left: 0.5em;'>" + pO.playlist.queue[i].duration + "</span>"): "");
+						elem.innerHTML += "<div><button class='playlist-track-btn playlist-track-btn-pl'" + (pO.playlist.queue[i].selected? " disabled": "") + ">&vrtri;</button><button class='playlist-track-btn playlist-track-btn-rm'>&#x292B;</button><button class='playlist-track-btn playlist-track-btn-up'" + (i == 0? " disabled": "") + ">&uarr;</button><button class='playlist-track-btn playlist-track-btn-dn'" + (i == pO.playlist.queue.length - 1? " disabled": "") + ">&darr;</button></div>";
 						elem.dataset.plIdx = i;
 						elem.dataset.id = pO.playlist.queue[i].id
 						elem.dataset.filePath = pO.playlist.queue[i].url;
@@ -264,8 +264,8 @@ var player = {
 
 					pO.playlist._render();
 				},
-				addTrack: function(id, url, fullname, artist, album, albumYear, title, duration) {
-					pO.playlist.queue_add({'id': id, 'url': url, 'fullname': fullname, 'artist': artist, 'album': album, 'albumYear': albumYear, 'title': title, 'duration': duration});
+				addTrack: function(id, url, fullname, artist, album, albumYear, title, duration, sourceData) {
+					pO.playlist.queue_add({'id': id, 'url': url, 'fullname': fullname, 'artist': artist, 'album': album, 'albumYear': albumYear, 'title': title, 'duration': duration, 'sourceData': sourceData});
 				},
 				updateTrackDuration: function(track, duration) {
 					if (!track.duration && duration) {
@@ -562,7 +562,7 @@ document.body.addEventListener("click", function(e) {
 	}
 
 	if (e.target.dataset.filePath && e.target.classList.contains("to-current-playlist")) {
-		player.playlist.addTrack(e.target.dataset.id, e.target.dataset.filePath, e.target.dataset.fileFullName, e.target.dataset.artist, e.target.dataset.album, e.target.dataset.albumYear, e.target.dataset.title, e.target.dataset.duration);
+		player.playlist.addTrack(e.target.dataset.id, e.target.dataset.filePath, e.target.dataset.fileFullName, e.target.dataset.artist, e.target.dataset.album, e.target.dataset.albumYear, e.target.dataset.title, e.target.dataset.duration, e.target.dataset.sourceData);
 	} else if (e.target.tagName.toLowerCase() == "a" && !e.target.target) {
 		e.preventDefault();
 		if (!e.target.href) { return; }       
