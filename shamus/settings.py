@@ -8,7 +8,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(',')
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -96,6 +96,14 @@ STATIC_URL = 'static/'
 MEDIA_ROOT = BASE_DIR / 'media/'
 MEDIA_URL = 'media/'
 MEDIA_UPLOADED = 'media/_sort/'
+
+
+# EXT4, NTFS, and HFS support only 255 characters per filename
+MAX_ARTISTPATH_TITLE_LENGTH = 100
+MAX_ALBUMPATH_TITLE_LENGTH = 100
+MAX_ALBUM_TRACKS = 999
+ALLOWED_PATHS_SYMBOLS_RE = r'[a-zа-я0-9]'
+UNKNOWN_TITLES_SYMBOLS_SIGN = '!#@'
 
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',

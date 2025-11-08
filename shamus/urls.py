@@ -16,7 +16,8 @@ urlpatterns = [
     path('catalogue', views.catalogue, name='catalogue'),
     re_path(r'upload/(?P<dst>artist|album)/(?P<dst_id>\d+)/$', views.upload,
             name='upload'),
-    re_path(r'^fs/(?P<symbol>[0-9]|[а-я]|[a-z]|[А-Я]|[A-Z]|Ё|\!\#\@)/$',
+    re_path(r'^fs/(?P<symbol>[0-9]|[а-я]|[a-z]|[А-Я]|[A-Z]|Ё|' +
+            settings.UNKNOWN_TITLES_SYMBOLS_SIGN + ')/$',
             views.catalogue_by_first_symbol,
             name='catalogue-page-first-symbol'),
     path('artist/add/', views.add_artist, name='artist-add'),
@@ -50,6 +51,7 @@ urlpatterns = [
     path(r'genre/list', views.list_genre, name='genre-list'),
     re_path(r'^genre/(?P<genre_id>\d+)/$', views.catalogue_by_genre,
             name='catalogue-page-genre'),
+    path('radio', views.radio, name='radio'),
 ]
 
 if settings.DEBUG:

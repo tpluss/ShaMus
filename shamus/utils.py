@@ -1,8 +1,8 @@
 import os
+import re
 import hashlib
 from io import BytesIO
 from zipfile import ZipFile
-from django.conf import settings
 
 
 def store_uploaded_file(f, dest: str) -> bool:
@@ -70,18 +70,11 @@ def numstr_list_to_int(numstr: list[str] | tuple[str]) -> list[int]:
     return ret
 
 
-def construct_album_folder_name(artists: list[str],
-                                album_title: str, album_year: int,
-                                system_path: bool = False) -> str:
-    artists_title = ', '.join(artists)
-    if system_path:
-        tpl = os.path.join(
-            settings.MEDIA_ROOT, artists[0][0], artists[0],
-            construct_album_folder_name(artists, album_title, album_year))
-    else:
-        tpl = f'{artists_title} - {album_title} ({album_year})'
-
-    return tpl 
+def escape_path(path: str) -> str:
+    """Возвращает строку, из которой удалены все символы,
+    кроме 1) кириллицы, 2) латиницы, 3) цифр, 4) дефиса, 5) скобок, 6) пробелов.
+    """
+    return re.sub(r'[^a-zа-яё0-9\-\s()]', '', path, flags=re.U | re.I | re.M)
 
 
 def create_zip_arch(full_path: str) -> BytesIO:

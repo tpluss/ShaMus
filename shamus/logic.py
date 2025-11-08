@@ -5,46 +5,121 @@ import shutil
 from django.conf import settings
 from django.core.files import File
 from .utils import (store_uploaded_file, get_md5_hexdigest,
-                    construct_album_folder_name, create_zip_arch, is_mp3_ext)
+                    escape_path, create_zip_arch, is_mp3_ext)
 from .models import Track, Artist, Album, Genre
 
 
-def construct_artist_folder_path(title: str) -> str:
-    return os.path.join(settings.MEDIA_ROOT, title[0], title)
+def construct_artist_folder_path(artist: Artist) -> str:
+    """
+    Возвращает полный путь для папки Артиста с учётом логики каталога:
+    MEDIA_ROOT -> <первый символ наименования> или '_s' -> <наименование>_<id>,
+    где "первый символ наименования" всегда в верхнем регистре;
+    "наименование" из имени Артиста в каталоге;
+    "id" - Artist.id для уникальности имени в случае зачистки всех символов.
+    Все символы в "наименование" очищаются через escape_path,
+    поэтому остаются только латиница, кириллица, цифры, дефис, скобки и пробел.
+    Итоговый размер имени отсекается до MAX_ARTISTPATH_TITLE_LENGTH с учётом
+    количества символов под использование "_id".
+    """
+    folder_name = escape_path(artist.title)
+    first_symbol = '_s' if not folder_name else folder_name[0].upper()
+
+    str_id = str(artist.id)
+    folder_name = folder_name[:settings.MAX_ARTISTPATH_TITLE_LENGTH-len(str_id)]
+
+    folder_name = f'{folder_name}_{str_id}'
+
+    return os.path.join(settings.MEDIA_ROOT, first_symbol, folder_name)
 
 
-def prepare_artist_folder(title: str) -> str:
-    path = construct_artist_folder_path(title)
+def prepare_artist_folder(artist: Artist) -> tuple[str, int]:
+    """
+    Создаёт, если ещё не создана, папку для Артиста на диске,
+    возвращает путь до папки и результат ret_code.
+    Коды возврата: -1 - ошибка; 0 - создано; 1- существовало.
+    """
+    ret_code = -1
+
+    path = construct_artist_folder_path(artist)
     if not os.path.isdir(path):
-        os.makedirs(path)
+        try:
+            os.makedirs(path)
+            ret_code = 0
+        except OSError as e:
+            print(e)
+    else:
+        ret_code = 1
 
-    return path
+    return path, ret_code
 
 
-def prepare_album_folder(artists: list[str], album_title: str,
-                         album_year: int) -> str:
-    catalogue_folder = os.path.join(
-            settings.MEDIA_ROOT, artists[0][0], artists[0],
-            construct_album_folder_name(artists, album_title, album_year))
+def construct_album_folder_path(album: Album) -> str:
+    """
+    Возвращает полный путь для папки Альбома с учётом логики каталога:
+    MEDIA_ROOT -> <первый символ наименования Артиста> или '_s' ->
+    <наименование Артиста>_<id> -> <наименование Альбома_<id>,
+    где вся часть до последнего элемента формируется в
+    construct_artist_folder_path по имени первого Артиста из аргументов;
+    "id" - Album.id для уникальности имени в случае зачистки всех символов.
+    Все символы в "наименование Альбома" очищаются через escape_path,
+    поэтому остаются только латиница, кириллица, цифры, дефис, скобки и пробел.
+    Итоговый размер имени отсекается до MAX_ALBUMPATH_TITLE_LENGTH с учётом
+    количества символов под использование "_id".
+    """
+    artist_path = construct_artist_folder_path(album.artist.all()[0])
+
+    str_id = str(album.id)
+    folder_name = escape_path(str(album))[
+                  :settings.MAX_ALBUMPATH_TITLE_LENGTH-len(str_id)]
+
+    folder_name = f'{folder_name}_{str_id}'
+
+    return os.path.join(artist_path, folder_name)
+
+
+def prepare_album_folder(album: Album) -> tuple[tuple[str], int]:
+    """
+    Создаёт, если ещё не создана, папку для Альбома на диске, после чего создаёт
+    на неё симлинки, если Артистов больше одного.
+    Возвращает список со списками, в которых содержатся пути и ret_code.
+    Коды возврата: -1 - ошибка; 0 - создано; 1 - существует; 2 - ошибка ссылок.
+    """
+    catalogue_folder = construct_album_folder_path(album)
+    ret = (catalogue_folder, )
+    ret_code = -1
 
     if not os.path.exists(catalogue_folder):
-        os.makedirs(catalogue_folder)
+        try:
+            os.makedirs(catalogue_folder)
+        except OSError as e:
+            ret_code = -1
+            print(e)
 
-    for artist in artists[1:]:
-        symfolder = os.path.join(
-                settings.MEDIA_ROOT, artist[0], artist,
-                construct_album_folder_name([artist], album_title, album_year))
-        if not os.path.exists(symfolder):
-            os.symlink(catalogue_folder, symfolder, target_is_directory=True) 
+        try:
+            artists = album.artist.all()[1:]
+            for artist in artists:
+                album.artist = artist
+                symfolder = construct_album_folder_path(album)
+                ret += (symfolder, )
 
-    return catalogue_folder
+                if not os.path.exists(symfolder):
+                    os.symlink(catalogue_folder, symfolder,
+                               target_is_directory=True)
+        except OSError as e:
+            ret_code = 2
+            print(e)
+    else:
+        ret_code = 1
+
+    return ret, ret_code
 
 
 def get_catalogue_contents():
     ret = {
         'catalogue_symbols': [chr(n) for n in range(ord('А'), ord('Я') + 1)] +
                              [chr(n) for n in range(ord('A'), ord('Z') + 1)] +
-                             [str(n) for n in range(0, 9 + 1)] + ['!#@'],
+                             [str(n) for n in range(0, 9 + 1)] +
+                             [settings.UNKNOWN_TITLES_SYMBOLS_SIGN],
         'default_artists': Artist.used.filter(id__in=(1, 2)),
         }
 
@@ -54,18 +129,15 @@ def get_catalogue_contents():
 
 
 def store_track(file_object, mode_mdl):
-    if mode_mdl.__class__.__name__ == 'Artist':
-        dst_folder = prepare_artist_folder(mode_mdl.title)
+    if isinstance(mode_mdl, Artist):
+        dst_folder = prepare_artist_folder(mode_mdl)[0]
         track_artist = mode_mdl.__class__.used.filter(id=mode_mdl.id)
-    elif mode_mdl.__class__.__name__ == 'Album':
-        dst_folder = prepare_album_folder(
-            mode_mdl.artist.all().values_list('title', flat=True),
-            mode_mdl.title,
-            mode_mdl.year) 
+    elif isinstance(mode_mdl, Album):
+        dst_folder = prepare_album_folder(mode_mdl)[0][0]
         track_artist = mode_mdl.artist.all()
     else:
         raise NotImplementedError
-    
+
     file_hash = get_md5_hexdigest(file_object.file.file)
 
     track_by_hash = Track.used.filter(file_hash=file_hash)
@@ -83,7 +155,7 @@ def store_track(file_object, mode_mdl):
         track.save()
         track.artist.set(track_artist)
 
-        if mode_mdl.__class__.__name__ == 'Album':
+        if isinstance(mode_mdl, Album):
             mode_mdl.track.add(track)
 
         return True
@@ -92,7 +164,7 @@ def store_track(file_object, mode_mdl):
 
 
 def create_album_zip(album: Album) -> BytesIO:
-    return create_zip_arch(album.get_full_path())
+    return create_zip_arch(construct_album_folder_path(album))
 
 
 def folder_to_shamus(path: str):

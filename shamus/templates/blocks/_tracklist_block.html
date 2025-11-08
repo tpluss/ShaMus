@@ -8,7 +8,7 @@
 				<span>{{ track.title|default:track.get_file_name }}{% with track.get_duration_min as track_min %}{% if track_min %}&nbsp; | {{ track_min }}{% endif %}{% endwith %} | </span>
 				&nbsp;<a href="{% url 'download' 'track' track.id %}" target="_blank">&#x2913;</a>
 				&nbsp;<a href="{% url 'track-edit' track.id %}" target="_blank">&#x270e;</a>
-				&nbsp;<span class="to-current-playlist" data-id="{{ track.id }}" data-file-path="{{ track.get_url }}" data-file-full-name="{{ track.get_full_name }}" data-title="{{ track.get_name }}" data-artist="{{ track.get_artists_title }}" data-album="{% if album %}{{ album.title }}{% endif %}" data-album-year="{% if album and album.year %}{{ album.year }}{% endif %}" data-duration="{{ track.get_duration_min|default_if_none:"" }}" data-source-data="{% if album %}album_{{ album.id }}{% else %}artist_{{ track.artist.all.0.id }}{% endif %}">&rarr;</span>
+				&nbsp;<span class="to-current-playlist" id="track-{{ track.id }}" data-id="{{ track.id }}" data-file-path="{{ track.get_url }}" data-file-full-name="{{ track.get_full_name }}" data-title="{{ track.get_name }}" data-artist="{{ track.get_artists_title }}" data-album="{% if album %}{{ album.title }}{% endif %}" data-album-year="{% if album and album.year %}{{ album.year }}{% endif %}" data-duration="{{ track.get_duration_min|default_if_none:"" }}" data-source-data="{% if album %}album_{{ album.id }}{% else %}artist_{{ track.artist.all.0.id }}{% endif %}">&rarr;</span>
 			</li>
 		{% endfor %}
 	</ul>

@@ -8,7 +8,7 @@
 }
 
 .mb02 {
-    margin-bottom: 0.2em;
+	margin-bottom: 0.2em;
 }
 
 button {
@@ -101,6 +101,7 @@ ul {
 	min-width: 3em;
 	height: 2em;
 	text-align: center;
+	padding: 0.1em;
 }
 
 #workplace_wrap {
@@ -151,6 +152,7 @@ ul {
 	height: 2em;
 	padding: 0 0.5em;
 	margin-right: 0.5em;
+	vertical-align: middle;
 }
 
 .to-current-playlist {
@@ -161,7 +163,6 @@ ul {
 
 .to-current-playlist-list {
 	font-size: 1em;
-	padding: 0 0.5em;
 }
 
 .link-btn {
@@ -176,6 +177,11 @@ ul {
     }
 	padding: 0.25em;
 	background-color: #d5cfcf;
+}
+
+.undecor-link {
+	text-decoration: none;
+	color: black;
 }
 
 #catalogue-table {

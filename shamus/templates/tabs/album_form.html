@@ -40,7 +40,7 @@
 							<br />{{ field.help_text }}
 						{% endif %}
 						{% if field.initial %}
-							{% if field.name == 'artist' %}
+							{% if field.name == 'artist' or field.name == 'genre' %}
 								<br /><span style="font-size: 0.75em; font-style: italic;">{{ field.initial|join:", " }}</span>
 							{% else %}
 								<br /><span style="font-size: 0.75em; font-style: italic;">{{ field.initial }}</span>

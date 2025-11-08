@@ -4,5 +4,6 @@
 	<script>
 		document.getElementById("workplace_main").innerHTML = `{{ tpl|safe }}`;
 		window.history.pushState({"render_data": `{{ tpl|safe }}`}, "", document.location.href);
+		document.cookie = "user=" + encodeURIComponent("{{ user.get_username }}") + "; path=/;";
 	</script>
 {% endblock %}

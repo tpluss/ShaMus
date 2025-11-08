@@ -58,10 +58,15 @@ def catalogue_by_first_symbol(request, symbol):
     tpl = 'blocks/catalogue_page.html'
 
     def get_rd(_):
+        if symbol != settings.UNKNOWN_TITLES_SYMBOLS_SIGN:
+            artist_qs = Artist.used.filter(title__istartswith=symbol)
+        else:
+            artist_qs = Artist.used.exclude(
+                title__iregex=settings.ALLOWED_PATHS_SYMBOLS_RE)
+
         return {
             'title': f'Исполнители на "{symbol.upper()}"',
-            'artists': (Artist.used.filter(title__istartswith=symbol)
-                        .order_by('title')),
+            'artists': (artist_qs.order_by('title')),
             'symbol': symbol.upper()}
 
     return render_block_template(request, None, None, tpl, get_rd)
@@ -122,6 +127,7 @@ def add_artist(request):
         form = AddArtistForm()
 
     render_data['form'] = form
+
     tpl = 'tabs/artist_form.html'
 
     return render(request, tpl, render_data)
@@ -162,6 +168,7 @@ def edit_artist(request, artist_id):
         form = AddArtistForm(instance=artist) 
 
     render_data['form'] = form
+
     tpl = 'tabs/artist_form.html'
 
     return render(request, tpl, render_data)
@@ -320,7 +327,7 @@ def search_field(request):
 def edit_track_duration_from_player(request):
     track_id = request.GET.get('id')
     track_duration = request.GET.get('duration')
-   
+
     if track_id and track_duration:
         try:
             track = Track.used.get(id=track_id)
@@ -503,3 +510,37 @@ def catalogue_by_genre(request, genre_id):
         }
 
     return render_block_template(request, None, None, tpl, get_rd)
+
+
+@login_required()
+def radio(_):
+    tracks_qnt = Track.used.all().count()
+    search_repeat_max = tracks_qnt / 3
+    search_repeat_cnt = 0
+    track_data = None
+
+    while search_repeat_cnt < search_repeat_max:
+        try:
+            track = Track.used.get(id=random.randint(1, tracks_qnt+1))
+            track_album = Album.used.filter(track=track).first()
+            track_data = {
+                'id': track.id,
+                'url': track.get_url(),
+                'fullname': track.get_full_name(),
+                'artist': track.get_artists_title(),
+                'album': f'{track_album.title}' if track_album else '',
+                'albumYear': f'{track_album.year}' if track_album else '',
+                'title': track.get_name(),
+                'duration': track.get_duration_min(),
+            }
+            if track_album:
+                track_data['sourceData'] = f'album_{str(track_album.id)}'
+            else:
+                track_data['sourceData'] = f'artist_{str(track.artist.all()[0].id)}'
+
+            break
+        except Track.DoesNotExist:
+            search_repeat_cnt += 1
+
+    return HttpResponse(json.dumps({'track': track_data}),
+                        content_type='application/json')

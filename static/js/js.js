@@ -31,8 +31,10 @@ var player = {
 		this.prevBtn = dqs("#player_btn_pr");
 		this.repeatBtn = dqs("#player_btn_re");
 		this.randomBtn = dqs("#player_btn_ra");
+		this.radioBtn = dqs("#player_btn_rd");
 		this.repeatMode = false;
 		this.randomMode = false;
+		this.radioMode = false;
 
 		this.durationSlider.addEventListener("click", function(e) {
 			if (!pO.au.duration) { return }
@@ -78,7 +80,27 @@ var player = {
 		});
 
 		this.au.addEventListener("ended", function(e) {
-			pO.nextBtn.dispatchEvent(new Event("click"));
+			if (pO.radioMode) {
+				var xhr = getXhr("GET", "/radio");
+				xhr.onload = function() {
+					if (xhr.readyState == 4 && xhr.status == 200) {
+						 try {
+							data = JSON.parse(xhr.response);
+							if (!data || !data['track']) {
+								pO.switchMode('none');
+								return alert('Произошла ошибка. Режим "Радио" будет выключен. Попробуйте обновить страницу.');
+							}
+							pO.playlist.queue_clear();
+							pO.playlist.addTrack(data.track.id, data.track.url, data.track.fullname, data.track.artist, data.track.album, data.track.albumYear, data.track.title, data.track.duration, data.track.sourceData);
+							pO.playlist.play(pO.playlist.queue[0]);
+						} finally { }
+					} else {
+						alert("Произошла ошибка. Попробуйте позже.");
+					} 
+				}
+			} else {
+				pO.nextBtn.dispatchEvent(new Event("click"));
+			}
 		});
 
 		this.pauseBtn.addEventListener("click", function(e) {
@@ -89,26 +111,61 @@ var player = {
 			pO.play();
 		});
 
-		this.repeatBtn.addEventListener("click", function(e) {
-		   if (pO.randomMode) {
-				pO.randomBtn.dispatchEvent(new Event("click"));
+		this.switchMode = function(mode) {
+			switch (mode) {
+				case 'repeat':
+					pO.repeatMode = !this.repeatMode;
+					pO.randomMode = false;
+					pO.radioMode = false;
+					break;
+				case 'random':
+					pO.repeatMode = false;
+					pO.randomMode = !this.randomMode;
+					pO.radioMode = false;
+					break;
+				case 'radio':
+					if (pO.radioMode) {
+						if (confirm('Отключить радио?')) {
+							pO.radioMode = false;
+						}
+					} else {
+						if (confirm('Включить радио?')) {
+							pO.radioMode = true;
+							pO.repeatMode = false;
+							pO.randomMode = false;
+							pO.au.dispatchEvent(new Event("ended"));
+						}
+					}
+					break;
+				case 'none':
+					pO.radioMode = false;
+					pO.repeatMode = false;
+					pO.randomMode = false;
 			}
-			pO.repeatMode = !pO.repeatMode;
-			pO.repeatBtn.style.background = pO.repeatMode? "grey": "";
 
+			pO.repeatBtn.style.background = pO.repeatMode? "grey": "";
+			pO.randomBtn.style.background = pO.randomMode? "grey": "";
+			pO.radioBtn.style.background = pO.radioMode? "grey": "";
+		}		
+
+		this.repeatBtn.addEventListener("click", function(e) {
+			pO.switchMode("repeat");
 		});
 
 		this.randomBtn.addEventListener("click", function(e) {
-			if (pO.repeatMode) {
-				pO.repeatBtn.dispatchEvent(new Event("click"));
-			}                    
-			pO.randomMode = !pO.randomMode;
-			pO.randomBtn.style.background = pO.randomMode? "grey": "";
+			pO.switchMode("random");
+		});
+
+		this.radioBtn.addEventListener("click", function(e) {
+			pO.switchMode("radio");
 		});
 
 		this.nextBtn.addEventListener("click", function(e) {
-			var nextTrack;                    
-			if (pO.randomMode) {
+			var nextTrack;
+			if (pO.radioMode) {
+				pO.au.dispatchEvent(new Event("ended"));
+				return;
+			} else if (pO.randomMode) {
 				 nextTrack = pO.playlist.getRndTrack();
 			} else {
 				nextTrack = pO.playlist.getNextTrack(pO.playlist.curTrack);
@@ -127,7 +184,10 @@ var player = {
 
 		this.prevBtn.addEventListener("click", function(e) {
 			var prevTrack;
-			if (pO.randomMode) {
+			if (pO.radioMode) {
+				pO.au.dispatchEvent(new Event("ended"));
+				return;
+			} else if (pO.randomMode) {
 				prevTrack = pO.playlist.getRndTrack();
 			} else {
 				prevTrack = pO.playlist.getPrevTrack(pO.playlist.curTrack);
@@ -196,13 +256,15 @@ var player = {
 							elem.id = "playlist-cur-track";
 							elem.appendChild(dqs("#player_track_duration_timer").cloneNode());
 						}
-						elem.innerHTML = "<a href='/" + (pO.playlist.queue[i].sourceData.startsWith('album')? "album": "artist") + "/" + pO.playlist.queue[i].sourceData.split('_')[1] + "'>" + pO.playlist.queue[i].fullname + "</a>" + (pO.playlist.queue[i].duration? ("<span style='margin-left: 0.5em;'>" + pO.playlist.queue[i].duration + "</span>"): "");
+
+						elem.innerHTML = "<a href='/" + (pO.playlist.queue[i].sourceData.startsWith('album')? "album": "artist") + "/" + pO.playlist.queue[i].sourceData.split('_')[1] + "#track-" + pO.playlist.queue[i].id + "'>" + pO.playlist.queue[i].fullname + "</a>" + (pO.playlist.queue[i].duration? ("<span style='margin-left: 0.5em;'>" + pO.playlist.queue[i].duration + "</span>"): "");
 						elem.innerHTML += "<div><button class='playlist-track-btn playlist-track-btn-pl'" + (pO.playlist.queue[i].selected? " disabled": "") + ">&vrtri;</button><button class='playlist-track-btn playlist-track-btn-rm'>&#x292B;</button><button class='playlist-track-btn playlist-track-btn-up'" + (i == 0? " disabled": "") + ">&uarr;</button><button class='playlist-track-btn playlist-track-btn-dn'" + (i == pO.playlist.queue.length - 1? " disabled": "") + ">&darr;</button></div>";
 						elem.dataset.plIdx = i;
-						elem.dataset.id = pO.playlist.queue[i].id
+						elem.dataset.id = pO.playlist.queue[i].id;
 						elem.dataset.filePath = pO.playlist.queue[i].url;
 						elem.dataset.album = pO.playlist.queue[i].album;
 						elem.dataset.albumYear = pO.playlist.queue[i].albumYear;
+						elem.dataset.sourceData = pO.playlist.queue[i].sourceData;
 
 						pO.playlist.renderLayout.appendChild(elem);
 					}
@@ -330,6 +392,8 @@ var player = {
 		}().init();
 
 		clickSlider(this.volumeSlider, 100);
+
+		return pO;
 	},
 	exist: function() { return Boolean(this.au) },
 	play: function() {
@@ -387,7 +451,7 @@ var clickSlider = function(sliderElem, percent) {
 	}());
 }
 
-player.init();
+var player = player.init();
 
 function getXhr(method, href, params, onerrorFunc) {
 	var xhr = new XMLHttpRequest();
@@ -572,8 +636,16 @@ document.body.addEventListener("click", function(e) {
 				if (xhr.responseURL.search('/login') > 0) {
 					window.location = xhr.responseURL;
 				}
-				dqs("#workplace_main").innerHTML = xhr.response;
 				window.history.pushState({'render_data': xhr.response}, "", e.target.href);
+				dqs("#workplace_main").innerHTML = xhr.response;
+				if (window.location.hash) {
+					var hashElem = dqs(window.location.hash);
+					if (hashElem) {
+						var coords = hashElem.getBoundingClientRect();
+						window.scrollTo(coords.x, coords.y)
+					}
+				}
+
 				var titleCookie = getCookie('shamus-title', true);
 				document.title = "ShaMus" + (titleCookie? (" | " + titleCookie): "");
 			} else {

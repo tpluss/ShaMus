@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block "layout" %}
+	<h2>Список Жанров</h2>
+	<form action="{% url 'genre-add' %}">
+		<input type="submit" name="" value="Добавить" class="form-btn" />
+	</form>
+	<ul>
+		{% for title, data in genres_data.items %}
+			<li>{{ title }}&nbsp;({{ data.1 }})&nbsp;<a href="{% url 'genre-edit' data.0 %}" target="_blank">&#x270e;</a>&nbsp;<a href="{% url 'catalogue-page-genre' data.0 %}">Альбомы</a></li>
+		{% endfor %}
+	</ul>
+{% endblock %}

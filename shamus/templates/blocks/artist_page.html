@@ -1,6 +1,6 @@
 {% spaceless %}
 	<div>
-		<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;<a href="{% url 'catalogue-page-first-symbol' artist.title.0 %}">{{ artist.title.0 }}</a>{{ artist.title|slice:"1:" }}&nbsp;<a href="{% url 'artist-view' artist.id %}" id="load-artist">&#x21bb;</a></h2>
+		<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;<a href="{% url 'catalogue-page-first-symbol' artist.get_catalogue_symbol %}">{{ artist.get_catalogue_symbol }}</a>{{ artist.title|slice:"1:" }}&nbsp;<a href="{% url 'artist-view' artist.id %}" id="load-artist">&#x21bb;</a></h2>
 	</div>
 	{% if albums %}
 		<ul>

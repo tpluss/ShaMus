@@ -29,6 +29,9 @@
 			    <td id="player_btn_re" class="player-btn" title="Повторять">&#x21ba;</td>
 			    <td id="player_btn_ra" class="player-btn" title="Случайно">&#x211b;</td>
 		    </tr>
+			<tr>
+			    <td id="player_btn_rd" class="player-btn" title="Радио" colspan="2">&#x1F4FB;</td>
+		    </tr>
 	    </table>
 	    <div id="player_volume_wrap">
 		    <div id="player_volume_slider">
@@ -44,7 +47,7 @@
             {% block "content" %}{% endblock %}
         </div>
         <div id="workplace_playlist_current">
-            <h2>Текущий Плейлист {{ user }}</h2>
+            <h2>Текущий Плейлист {{ user.get_username }}</h2>
         </div>
     </div>
 {% endblock %}

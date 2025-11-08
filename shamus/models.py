@@ -4,8 +4,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .utils import (construct_album_folder_name, get_md5_hexdigest,
-                    seconds_to_duration_str)
+from .utils import get_md5_hexdigest, seconds_to_duration_str
 
 
 class UsedManager(models.Manager):
@@ -38,25 +37,25 @@ class EditLogModel(CommonModel):
 
 
 class Track(CommonModel):
-    title = models.CharField(verbose_name='Название',
-                             blank=True, max_length=512)
+    title: str = models.CharField(verbose_name='Название',
+                                  blank=True, max_length=512)
  
     artist = models.ManyToManyField(verbose_name='Исполнитель', to='Artist')
 
-    file_hash = models.CharField(verbose_name='md5', max_length=32)
+    file_hash: str = models.CharField(verbose_name='md5', max_length=32)
 
-    path = models.FilePathField(
+    path: str = models.FilePathField(
             verbose_name='Путь на диске', path=str(settings.MEDIA_ROOT),
             match='.mp3', recursive=True, allow_files=True, max_length=1000)
 
-    duration = models.PositiveIntegerField(verbose_name='Длительность',
-                                           blank=True, null=True)
+    duration: int = models.PositiveIntegerField(verbose_name='Длительность',
+                                                blank=True, null=True)
 
-    is_forbiden = models.BooleanField(verbose_name='Запрещено', blank=True,
-                                      default=False)
+    is_forbiden: bool = models.BooleanField(verbose_name='Запрещено',
+                                            blank=True, default=False)
 
-    is_explicit = models.BooleanField(verbose_name='Откровенная лексика',
-                                      blank=True, default=False)
+    is_explicit: bool = models.BooleanField(verbose_name='Откровенная лексика',
+                                            blank=True, default=False)
 
     def get_file_name(self):
         return os.path.basename(self.path)
@@ -91,7 +90,7 @@ class Track(CommonModel):
         return ret
 
     def get_url(self):
-        return '/' + self.path
+        return f'/{self.path.replace("\\", "/")}'
 
     def get_duration_min(self):
         if self.duration:
@@ -113,7 +112,7 @@ class Track(CommonModel):
 
 
 class Artist(CommonModel):
-    title = models.CharField(verbose_name='Исполнитель', max_length=512)
+    title: str = models.CharField(verbose_name='Исполнитель', max_length=512)
 
     def __str__(self):
         return self.title
@@ -127,6 +126,12 @@ class Artist(CommonModel):
 
     def get_albums(self, order_by: str = '-year'):
         return Album.used.filter(artist=self.id).order_by(order_by)
+
+    def get_catalogue_symbol(self):
+        if re.match(r'[a-zа-я0-9]', self.title[0], flags=re.U | re. I):
+            return self.title[0]
+        else:
+            return '!#@'
 
 
 class Album(CommonModel):
@@ -144,7 +149,8 @@ class Album(CommonModel):
     genre = models.ManyToManyField(verbose_name='Жанр', to='Genre', blank=True)
 
     def __str__(self):
-        artists_name = ', '.join([a.title for a in self.artist.all()])
+        artists_name = ', '.join(self.artist.all().
+                                 values_list('title', flat=True))
 
         return f'{artists_name} - {self.title} ({self.year})'
 
@@ -169,11 +175,6 @@ class Album(CommonModel):
 
     def title_year(self):
         return f'{self.title} ({self.year})'
-
-    def get_full_path(self):
-        return construct_album_folder_name(
-                self.artist.all().values_list('title', flat=True),
-                self.title, self.year, system_path=True)
 
     def get_ordered_track(self):
         if self.track_order:
@@ -225,7 +226,8 @@ class Playlist(CommonModel):
 
 
 class Genre(CommonModel):
-    title = models.CharField(verbose_name='Жанр', max_length=512, unique=True)
+    title: str = models.CharField(verbose_name='Жанр', max_length=512,
+                                  unique=True)
 
     def __str__(self):
         return self.title
