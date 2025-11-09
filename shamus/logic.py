@@ -1,6 +1,7 @@
+from io import BytesIO
 import os
 import re
-from io import BytesIO
+import random
 import shutil
 from django.conf import settings
 from django.core.files import File
@@ -315,3 +316,19 @@ def get_genre_stat(include_empty=True):
             ret[genre] = 0
 
     return ret
+
+
+def get_random_track(data_format: str ='python_dict') -> Track | None:
+    tracks_qnt = Track.used.all().count()
+    search_repeat_max = tracks_qnt / 3
+    search_repeat_cnt = 0
+
+    while search_repeat_cnt < search_repeat_max:
+        try:
+            track = Track.used.get(id=random.randint(1, tracks_qnt + 1))
+
+            return track.get_track_player_data(data_format=data_format)
+        except Track.DoesNotExist:
+            search_repeat_cnt += 1
+
+    return None

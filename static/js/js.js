@@ -428,6 +428,7 @@ var player = {
 		}
 	}
 }
+
 var formatSecToMin = function(sec) { return ("0" + ((sec - sec % 60) / 60)).slice(-2) +  ":" + ("0" + sec % 60).slice(-2) }
 
 var percentBySliderClick = function(event) {
@@ -450,8 +451,6 @@ var clickSlider = function(sliderElem, percent) {
 		return evt;
 	}());
 }
-
-var player = player.init();
 
 function getXhr(method, href, params, onerrorFunc) {
 	var xhr = new XMLHttpRequest();
@@ -620,6 +619,8 @@ var selectQsField = {
 	}
 }
 
+var player = player.init();
+
 document.body.addEventListener("click", function(e) {
 	if (!dqs("#workplace_main")) {
 		return;
@@ -641,7 +642,7 @@ document.body.addEventListener("click", function(e) {
 				if (window.location.hash) {
 					var hashElem = dqs(window.location.hash);
 					if (hashElem) {
-						var coords = hashElem.getBoundingClientRect();
+						var coords = hashElem.parentNode.getBoundingClientRect();
 						window.scrollTo(coords.x, coords.y)
 					}
 				}
@@ -659,6 +660,30 @@ document.body.addEventListener("click", function(e) {
 				toTracklistBtns[i].dispatchEvent(new MouseEvent("click", {"bubbles": true}));
 			}
 		}
+    } else if (e.target.classList.contains("to-current-playlist-by-title")) {
+        var href = e.target.dataset.source.split('_').slice(-1) + "/tracklist/";
+        if (e.target.dataset.source.startsWith("album")) {
+            href = "/album/" + href;
+        } else if (e.target.dataset.source.startsWith("artist")) {
+            href = "/artist/" + href;
+        }
+		var xhr = getXhr("GET", href);
+		xhr.onload = function() {
+			if (xhr.readyState == 4 && xhr.status == 200) {
+				if (xhr.responseURL.search("/login") > 0) {
+					window.location = xhr.responseURL;
+				}
+				
+                data = JSON.parse(xhr.response);
+		        if (!data || !data["tracklist"]) {
+				    return alert('Произошла ошибка. Попробуйте обновить страницу.');
+                }
+
+                for (var i = 0; i < data["tracklist"].length; i++) {
+                    player.playlist.addTrack(data["tracklist"][i].id, data["tracklist"][i].url, data["tracklist"][i].fullname, data["tracklist"][i].artist, data["tracklist"][i].album, data["tracklist"][i].albumYear, data["tracklist"][i].title, data["tracklist"][i].duration, data["tracklist"][i].sourceData);
+                }
+            }
+        }
 	}
 });
 

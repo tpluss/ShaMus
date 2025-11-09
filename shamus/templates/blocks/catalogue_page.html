@@ -5,7 +5,10 @@
 			{% if artists %}
 				<ul>
 					{% for artist in artists %}
-						<li><a href="{% url 'artist-view' artist.id %}">{{ artist }}</a></li>
+						<li>
+                            <a href="{% url 'artist-view' artist.id %}">{{ artist }}</a>
+                            &nbsp;<button class="small-text to-current-playlist-by-title" data-source="artist_{{ artist.id }}">Всё в плейлист &rarr;</button>
+                        </li>
 					{% endfor %}
 				</ul>
 			{% endif %}

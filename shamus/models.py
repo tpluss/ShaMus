@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -107,6 +108,32 @@ class Track(CommonModel):
 
         return self.get_hash()
 
+    def get_track_player_data(self, data_format: str ='python_dict',
+                              track_album: 'Album' = None):
+        if track_album is None:
+            track_album = Album.used.filter(track=self).first()
+
+        track_data = {
+            'id': self.id,
+            'url': self.get_url(),
+            'fullname': self.get_full_name(),
+            'artist': self.get_artists_title(),
+            'album': f'{track_album.title}' if track_album else '',
+            'albumYear': f'{track_album.year}' if track_album else '',
+            'title': self.get_name(),
+            'duration': self.get_duration_min(),
+        }
+
+        if track_album:
+            track_data['sourceData'] = f'album_{str(track_album.id)}'
+        else:
+            track_data['sourceData'] = f'artist_{str(self.artist.all()[0].id)}'
+
+        if data_format == 'json':
+            track_data = json.dumps({'track': track_data})
+
+        return track_data
+
     def __str__(self):
         return self.get_full_name(with_ext=False)
 
@@ -127,7 +154,7 @@ class Artist(CommonModel):
     def get_albums(self, order_by: str = '-year'):
         return Album.used.filter(artist=self.id).order_by(order_by)
 
-    def get_catalogue_symbol(self):
+    def get_catalogue_symbol(self) -> str:
         if re.match(r'[a-zа-я0-9]', self.title[0], flags=re.U | re. I):
             return self.title[0]
         else:
@@ -135,18 +162,19 @@ class Artist(CommonModel):
 
 
 class Album(CommonModel):
-    title = models.CharField(verbose_name='Название', max_length=512)
+    title: str = models.CharField(verbose_name='Название', max_length=512)
 
     artist = models.ManyToManyField(verbose_name='Исполнитель', to='Artist')
 
-    year = models.PositiveSmallIntegerField(verbose_name='Год')
+    year: int = models.PositiveSmallIntegerField(verbose_name='Год')
 
     track = models.ManyToManyField(verbose_name='Трек',
                                    to='Track', blank=True)
 
     track_order = models.TextField(verbose_name='Порядок Треков', blank=True)
 
-    genre = models.ManyToManyField(verbose_name='Жанр', to='Genre', blank=True)
+    genre = models.ManyToManyField(verbose_name='Жанр', to='Genre',
+                                            blank=True)
 
     def __str__(self):
         artists_name = ', '.join(self.artist.all().
@@ -173,7 +201,7 @@ class Album(CommonModel):
 
                 self.track.set(Track.objects.filter(id__in=ordered_tracks_id))
 
-    def title_year(self):
+    def title_year(self) -> str:
         return f'{self.title} ({self.year})'
 
     def get_ordered_track(self):
@@ -220,9 +248,11 @@ class Playlist(CommonModel):
     user = models.ForeignKey(verbose_name='Пользователь', to=User,
                              on_delete=models.PROTECT)
 
-    track = models.ManyToManyField(verbose_name='Трек', to='Track', blank=True)
+    track: Track = models.ManyToManyField(verbose_name='Трек', to='Track',
+                                          blank=True)
 
-    is_common = models.BooleanField(verbose_name='Виден другим', default=False)
+    is_common: bool = models.BooleanField(verbose_name='Виден другим',
+                                          default=False)
 
 
 class Genre(CommonModel):

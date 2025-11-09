@@ -52,6 +52,8 @@ urlpatterns = [
     re_path(r'^genre/(?P<genre_id>\d+)/$', views.catalogue_by_genre,
             name='catalogue-page-genre'),
     path('radio', views.radio, name='radio'),
+    re_path(r'^(?P<source>album|artist)/(?P<source_id>\d+)/tracklist/$',
+            views.get_tracklist, name='get-tracklist'),
 ]
 
 if settings.DEBUG:

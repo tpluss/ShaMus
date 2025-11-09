@@ -13,7 +13,8 @@ from .forms import (UploadFileForm, AddArtistForm, AddAlbumForm, AddTrackForm,
                     TrackRenamerForm, AddGenreForm)
 
 
-def render_block_template(request, mdl: Artist | Album | Track | None,
+def render_block_template(request,
+                          mdl: type[Artist] | type[Album] | type[Track] | None,
                           mdl_id: int | None, tpl: str, get_rd):
     mdl_instance = None
     if mdl:
@@ -86,9 +87,9 @@ def upload(request, dst, dst_id):
     except dst_mdl.DoesNotExist:
         return redirect('/')
 
-    render_data = {'title': f'Загрузка Треков в {dst}',
-                   'disk': logic.get_disk_space_info_by_path(
-                       settings.MEDIA_ROOT)}
+    render_data = dict()
+    render_data['title'] = f'Загрузка Треков в {dst}',
+    render_data['disk'] = logic.get_disk_space_info_by_path(settings.MEDIA_ROOT)
 
     if request.POST:
         form = UploadFileForm(request.POST, request.FILES)
@@ -111,7 +112,8 @@ def upload(request, dst, dst_id):
 
 @login_required
 def add_artist(request):
-    render_data = {'title': 'Добавление Исполнителя'}
+    render_data = dict()
+    render_data['title'] = 'Добавление Исполнителя'
 
     if request.POST:
         if request.POST.get('artist_repeat_allow'):
@@ -155,7 +157,8 @@ def edit_artist(request, artist_id):
     except Artist.DoesNotExist:
         return redirect('/')
 
-    render_data = {'title': f'Редактирование Исполнителя "{artist.title}"'}
+    render_data = dict()
+    render_data['title'] = f'Редактирование Исполнителя "{artist.title}"'
 
     if request.POST:
         form = AddArtistForm(request.POST, instance=artist)
@@ -176,7 +179,8 @@ def edit_artist(request, artist_id):
 
 @login_required
 def add_album(request, artist_id=None):
-    render_data = {'title': f'Добавление Альбома'}
+    render_data = dict()
+    render_data['title'] = f'Добавление Альбома'
 
     artist = None
     if artist_id:
@@ -362,7 +366,8 @@ def last_uploaded(request):
 def rename_tracks(request, track_id=None):
     tpl = 'tabs/rename_tracks_form.html'
 
-    render_data = {'title': 'Режим переименования Треков'}
+    render_data = dict()
+    render_data['title'] = 'Режим переименования Треков'
 
     if request.POST:
         if request.POST.get('pass'):
@@ -433,7 +438,8 @@ def rename_tracks(request, track_id=None):
 
 @login_required
 def add_genre(request):
-    render_data = {'title': f'Добавление Жанра'}
+    render_data = dict()
+    render_data['title'] = 'Добавление Жанра'
 
     if request.POST:
         form = AddGenreForm(request.POST)
@@ -459,7 +465,8 @@ def edit_genre(request, genre_id):
     except Genre.DoesNotExist:
         return redirect('/')
 
-    render_data = {'title': f'Редактирование Жанра {genre}'}
+    render_data = dict()
+    render_data['title'] = f'Редактирование Жанра {genre}'
 
     if request.POST:
         form = AddGenreForm(request.POST, instance=genre)
@@ -514,33 +521,34 @@ def catalogue_by_genre(request, genre_id):
 
 @login_required()
 def radio(_):
-    tracks_qnt = Track.used.all().count()
-    search_repeat_max = tracks_qnt / 3
-    search_repeat_cnt = 0
-    track_data = None
+    track = logic.get_random_track(data_format='json')
 
-    while search_repeat_cnt < search_repeat_max:
-        try:
-            track = Track.used.get(id=random.randint(1, tracks_qnt+1))
-            track_album = Album.used.filter(track=track).first()
-            track_data = {
-                'id': track.id,
-                'url': track.get_url(),
-                'fullname': track.get_full_name(),
-                'artist': track.get_artists_title(),
-                'album': f'{track_album.title}' if track_album else '',
-                'albumYear': f'{track_album.year}' if track_album else '',
-                'title': track.get_name(),
-                'duration': track.get_duration_min(),
-            }
-            if track_album:
-                track_data['sourceData'] = f'album_{str(track_album.id)}'
-            else:
-                track_data['sourceData'] = f'artist_{str(track.artist.all()[0].id)}'
+    return HttpResponse(track if track else json.dumps({'track': {}}),
+                        content_type='application/json')
 
-            break
-        except Track.DoesNotExist:
-            search_repeat_cnt += 1
 
-    return HttpResponse(json.dumps({'track': track_data}),
+@login_required
+def get_tracklist(_, source: str, source_id: int):
+    track_data = []
+
+    try:
+        if source == 'album':
+            album = Album.used.get(id=source_id)
+            track_data += [track.get_track_player_data(track_album=album)
+                           for track in album.track.all()]
+        elif source == 'artist':
+            artist = Artist.used.get(id=source_id)
+            for album in artist.get_albums():
+                track_data += [track.get_track_player_data(track_album=album)
+                               for track in album.track.all()]
+            for track in artist.get_unalbumed_tracks():
+                track_data += [track.get_track_player_data(track_album=False)]
+        else:
+            track_data = []
+    except Album.DoesNotExist:
+        pass
+    except Artist.DoesNotExist:
+        pass
+
+    return HttpResponse(json.dumps({'tracklist': track_data}),
                         content_type='application/json')
