@@ -42,7 +42,9 @@ urlpatterns = [
     re_path(r'download/(?P<source>track|album)/(?P<source_id>\d+)/$',
             views.download, name='download'),
     path('search/field', views.search_field, name='search-field'),
-    path('last', views.last_uploaded, name='last-uploaded'),
+    re_path(r'last/(?P<mdl>(album|artist|track))/'
+            r'(?P<qnt>[1-9]|[1-4][0-9]?|50)/$',
+            views.last_uploaded, name='last-uploaded'),
     re_path(r'track/renamer/(?P<track_id>\d+)?', views.rename_tracks,
             name='track-renamer'),
     path('genre/add', views.add_genre, name='genre-add'),

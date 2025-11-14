@@ -134,3 +134,10 @@ class AddGenreForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['title'].widget.attrs['size'] = '200'
+
+
+class LastUploadedParameters(forms.Form):
+    entity = forms.ChoiceField(label='Вид', choices=(
+        ('album', 'Альбомы'), ('artist', 'Исполнители'), ('track', 'Треки')))
+
+    qnt = forms.IntegerField(label='Количество', min_value=1, max_value=50)

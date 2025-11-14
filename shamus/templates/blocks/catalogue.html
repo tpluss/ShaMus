@@ -15,7 +15,7 @@
 		<a href="{% url 'artist-view' artist.id %}">{{ artist.title }}</a>&nbsp;
 	{% endfor %}
 
-	<a href="{% url 'last-uploaded' %}">Последние загрузки</a>
+	<a href="{% url 'last-uploaded' 'album' 10 %}">Последние добавленные</a>
 	<br><br>
 	<a href="{% url 'track-renamer' %}" target="_blank">Режим переименования Треков</a>
 	<br>

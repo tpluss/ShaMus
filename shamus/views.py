@@ -1,5 +1,6 @@
 import json
 import random
+from typing import Callable
 from urllib import parse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -9,15 +10,36 @@ from django.urls import reverse
 from .utils import numstr_list_to_int
 from . import logic
 from .models import Artist, Track, Album, Genre
-from .forms import (UploadFileForm, AddArtistForm, AddAlbumForm, AddTrackForm,
-                    TrackRenamerForm, AddGenreForm)
+from . import forms
 
 
 def render_block_template(request,
                           mdl: type[Artist] | type[Album] | type[Track] | None,
-                          mdl_id: int | None, tpl: str, get_rd):
+                          mdl_id: int | None, tpl: str, get_rd: Callable):
+    """
+    Возвращает HttpResponse с отрендеренным блоком tpl и нужным контекстом,
+    получаемым из get_rd, где get_rd фукнция для формирования контекста,
+    переданная при вызове.
+
+    При указании mdl и mdl_id в вызов get_rd передаётся конкретный инстанс
+    модели заданного типа.
+
+    Если в заголовке запроса нет флага HTTP_X_SHAMUS, тогда рендер шаблона
+    передаётся в виде параметра tpl контекста, а шаблон ответа tpl
+    подменяется на главную страницу index.html.
+    В противном случае отдаётся ответ с отрендеренным шаблоном tpl, а в куки
+    добавляется shamus-title, дублирующий title из контекста, если ключ задан.
+
+    :param request: HttpRequest;
+    :param mdl: тип модели;
+    :param mdl_id: id для подбора инстанса заданного типа модели;
+    :param tpl: путь к шаблону;
+    :param get_rd: функция, возвращаюая контекст для рендера.
+    """
     mdl_instance = None
     if mdl:
+        if not mdl_id:
+            raise ValueError('Parameter "mdl_id" expected with "mdl".')
         try:
             mdl_instance = mdl.used.get(id=mdl_id)
         except mdl.DoesNotExist:
@@ -31,6 +53,7 @@ def render_block_template(request,
 
         # replace '\' char to '\\' sequence for method |safe in template
         render_data['tpl'] = render_data['tpl'].replace('\\', '\\\\')
+        render_data['tpl'] = render_data['tpl'].replace('`', '\`')
 
         tpl = 'index.html'
 
@@ -88,11 +111,11 @@ def upload(request, dst, dst_id):
         return redirect('/')
 
     render_data = dict()
-    render_data['title'] = f'Загрузка Треков в {dst}',
+    render_data['title'] = f'Загрузка Треков в {dst}'
     render_data['disk'] = logic.get_disk_space_info_by_path(settings.MEDIA_ROOT)
 
     if request.POST:
-        form = UploadFileForm(request.POST, request.FILES)
+        form = forms.UploadFileForm(request.POST, request.FILES)
 
         if form.is_valid():
             render_data['upload_result'] = []
@@ -101,7 +124,7 @@ def upload(request, dst, dst_id):
                 render_data['upload_result'].append(
                         (f._name, logic.store_track(f, dst)))
     else:
-        form = UploadFileForm()
+        form = forms.UploadFileForm()
 
     render_data['form'] = form
     render_data['dst_cls'] = dst.__class__.__name__.lower()
@@ -117,16 +140,16 @@ def add_artist(request):
 
     if request.POST:
         if request.POST.get('artist_repeat_allow'):
-            form = AddArtistForm(request.POST, is_title_repeat_allowed=True)
+            form = forms.AddArtistForm(request.POST, is_title_repeat_allowed=True)
         else:
-            form = AddArtistForm(request.POST)
+            form = forms.AddArtistForm(request.POST)
 
         if form.is_valid():
             form.save()
 
             return redirect('/')
     else:
-        form = AddArtistForm()
+        form = forms.AddArtistForm()
 
     render_data['form'] = form
 
@@ -161,14 +184,14 @@ def edit_artist(request, artist_id):
     render_data['title'] = f'Редактирование Исполнителя "{artist.title}"'
 
     if request.POST:
-        form = AddArtistForm(request.POST, instance=artist)
+        form = forms.AddArtistForm(request.POST, instance=artist)
 
         if form.is_valid():
             form.save()
 
             return redirect(reverse('artist-view', args=(artist.id, )))
     else:
-        form = AddArtistForm(instance=artist) 
+        form = forms.AddArtistForm(instance=artist)
 
     render_data['form'] = form
 
@@ -191,14 +214,14 @@ def add_album(request, artist_id=None):
             pass
 
     if request.POST:
-        form = AddAlbumForm(request.POST)
+        form = forms.AddAlbumForm(request.POST)
 
         if form.is_valid():
             album = form.save()
 
             return redirect(reverse('album-view', args=(album.id, )))
     else:
-        form = AddAlbumForm(
+        form = forms.AddAlbumForm(
                 initial={'artist': Artist.used.filter(id=artist.id)})
 
     render_data['form'] = form
@@ -229,14 +252,14 @@ def edit_album(request, album_id):
                    'album': album}
 
     if request.POST:
-        form = AddAlbumForm(request.POST, instance=album)
+        form = forms.AddAlbumForm(request.POST, instance=album)
 
         if form.is_valid():
             form.save()
 
             return redirect(reverse('album-view', args=(album.id, )))
     else:
-        form = AddAlbumForm(instance=album)
+        form = forms.AddAlbumForm(instance=album)
 
         render_data['album_tracks'] = album.get_ordered_track()
         render_data['unalbumed_tracks'] = []
@@ -260,7 +283,7 @@ def edit_track(request, track_id):
     if request.POST:
         artist_ids = numstr_list_to_int(request.POST.getlist('artist'))
 
-        form = AddTrackForm(
+        form = forms.AddTrackForm(
                 request.POST, instance=track, 
                 initial={'artist': Artist.used.filter(id__in=artist_ids)})
 
@@ -269,7 +292,7 @@ def edit_track(request, track_id):
 
             return redirect('/')
     else:
-        form = AddTrackForm(instance=track, 
+        form = forms.AddTrackForm(instance=track,
                             initial={'artist': track.artist.all()})
 
     render_data = {'title': 'Редактирование сведений о Треке',
@@ -349,17 +372,30 @@ def edit_track_duration_from_player(request):
 
 
 @login_required
-def last_uploaded(request):
-    def get_rd(_):
-        ret = {'tracks': (Track.used.all()
-                          .select_related()
-                          .order_by('-id')[:100]),
-               'title': 'Последние 100 Треков'}
+def last_uploaded(request, mdl: str, qnt: int):
+    def create_get_rd():
+        rd_opts = {
+            'artist': ('artists', Artist, 'Исполнители'),
+            'album': ('albums', Album, 'Альбомы'),
+            'track': ('tracks', Track, 'Треки')
+        }
 
-        return ret
+        def get_rd(_):
+            ret = {
+                rd_opts[mdl][0]: (rd_opts[mdl][1].used.all()
+                    .select_related().order_by('-id')[:int(qnt)]),
+                'title': f'Последние {rd_opts[mdl][2]}, {qnt} шт.',
+                'entity': rd_opts[mdl][0],
+                'form': forms.LastUploadedParameters(
+                    initial={'entity': mdl, 'qnt': qnt})
+            }
+
+            return ret
+
+        return get_rd
 
     return render_block_template(request, None, None,
-                                 'blocks/last_uploaded.html', get_rd)
+                                 'blocks/last_uploaded.html', create_get_rd())
 
 
 @login_required
@@ -378,7 +414,7 @@ def rename_tracks(request, track_id=None):
         except ValueError:
             return redirect(reverse('track-renamer'))
 
-        form = TrackRenamerForm(request.POST, track_id=track_id)
+        form = forms.TrackRenamerForm(request.POST, track_id=track_id)
 
         is_save = (request.POST.get('save_random') or
                    request.POST.get('save_next'))
@@ -422,7 +458,7 @@ def rename_tracks(request, track_id=None):
         except Track.DoesNotExist:
             return redirect(reverse('track-renamer'))
 
-        form = TrackRenamerForm(track_id=track_id)
+        form = forms.TrackRenamerForm(track_id=track_id)
         render_data['track'] = track
 
     render_data['form'] = form
@@ -442,14 +478,14 @@ def add_genre(request):
     render_data['title'] = 'Добавление Жанра'
 
     if request.POST:
-        form = AddGenreForm(request.POST)
+        form = forms.AddGenreForm(request.POST)
 
         if form.is_valid():
             form.save()
 
             return redirect(reverse('genre-list', args=()))
     else:
-        form = AddGenreForm()
+        form = forms.AddGenreForm()
 
     render_data['form'] = form
 
@@ -469,14 +505,14 @@ def edit_genre(request, genre_id):
     render_data['title'] = f'Редактирование Жанра {genre}'
 
     if request.POST:
-        form = AddGenreForm(request.POST, instance=genre)
+        form = forms.AddGenreForm(request.POST, instance=genre)
 
         if form.is_valid():
             form.save()
 
             return redirect(reverse('genre-list', args=()))
     else:
-        form = AddGenreForm(instance=genre)
+        form = forms.AddGenreForm(instance=genre)
 
     render_data['form'] = form
 
@@ -535,12 +571,12 @@ def get_tracklist(_, source: str, source_id: int):
         if source == 'album':
             album = Album.used.get(id=source_id)
             track_data += [track.get_track_player_data(track_album=album)
-                           for track in album.track.all()]
+                           for track in album.get_ordered_track()]
         elif source == 'artist':
             artist = Artist.used.get(id=source_id)
-            for album in artist.get_albums():
+            for album in artist.get_albums().order_by('year', 'id'):
                 track_data += [track.get_track_player_data(track_album=album)
-                               for track in album.track.all()]
+                               for track in album.get_ordered_track()]
             for track in artist.get_unalbumed_tracks():
                 track_data += [track.get_track_player_data(track_album=False)]
         else:
