@@ -1,6 +1,7 @@
 import os
 import re
 import json
+from urllib.parse import quote as url_quote
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -91,7 +92,7 @@ class Track(CommonModel):
         return ret
 
     def get_url(self):
-        return f'/{self.path.replace("\\", "/")}'
+        return url_quote(f'/{self.path.replace("\\", "/")}')
 
     def get_duration_min(self):
         if self.duration:
