@@ -20,6 +20,23 @@ ul {
 	list-style-position: inside;
 }
 
+.album-order-track-tbl {
+    border: 1px #000 solid;
+    border-collapse: collapse;
+    min-width: 30%;
+    width: 70%;
+}
+
+.album-order-track-tbl tr {
+    border: 1px #000 solid;
+    padding: 0.5em 0.5em;
+}
+
+.album-order-track-tbl td, .album-order-track-tbl th {
+    border: 1px #000 solid;
+    padding: 0.5em 0.5em;
+}
+
 .underline {
 	text-decoration: underline;
 }
@@ -28,16 +45,24 @@ ul {
 	font-weight: bolder;
 }
 
-.red {
-	color: red;
-}
-
 .small-text {
 	font-size: 0.5em;
 }
 
+.big-text {
+	font-size: 1.5em;
+}
+
+.red {
+	color: red;
+}
+
 .green {
 	color: green;
+}
+
+.center {
+	text-align: center;
 }
 
 #player_wrap {

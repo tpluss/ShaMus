@@ -96,7 +96,7 @@ var player = {
 						} finally { }
 					} else {
 						alert("Произошла ошибка. Попробуйте позже.");
-					} 
+					}
 				}
 			} else {
 				pO.nextBtn.dispatchEvent(new Event("click"));
@@ -146,7 +146,7 @@ var player = {
 			pO.repeatBtn.style.background = pO.repeatMode? "grey": "";
 			pO.randomBtn.style.background = pO.randomMode? "grey": "";
 			pO.radioBtn.style.background = pO.radioMode? "grey": "";
-		}		
+		}
 
 		this.repeatBtn.addEventListener("click", function(e) {
 			pO.switchMode("repeat");
@@ -175,12 +175,12 @@ var player = {
 				}
 			}
 
-			if (nextTrack) {                    
+			if (nextTrack) {
 				pO.playlist.play(nextTrack);
 			} else {
 				pO.pauseBtn.dispatchEvent(new Event("click"));
 			}
-		});  
+		});
 
 		this.prevBtn.addEventListener("click", function(e) {
 			var prevTrack;
@@ -193,7 +193,7 @@ var player = {
 				prevTrack = pO.playlist.getPrevTrack(pO.playlist.curTrack);
 			}
 
-			if (prevTrack) {                    
+			if (prevTrack) {
 				pO.playlist.play(prevTrack);
 			} else {
 				pO.pauseBtn.dispatchEvent(new Event("click"));
@@ -229,7 +229,7 @@ var player = {
 							var clickedIdx = parseInt(e.target.parentNode.parentNode.dataset.plIdx);
 
 							if (e.target.classList.contains("playlist-track-btn-rm")) {
-								pO.playlist.queue_remove(clickedIdx);                        
+								pO.playlist.queue_remove(clickedIdx);
 							} else if (e.target.classList.contains("playlist-track-btn-up")) {
 								pO.playlist.queue_up(clickedIdx);
 							} else if (e.target.classList.contains("playlist-track-btn-dn")) {
@@ -300,14 +300,14 @@ var player = {
 					pO.playlist.queue.reverse();
 
 					pO.playlist._render();
-				}, 
+				},
 				queue_remove: function(plIdx) {
 					pO.playlist.queue.splice(plIdx, 1);
 
-					pO.playlist._render(); 
+					pO.playlist._render();
 				},
 				queue_up: function(plIdx) {
-					pO.playlist.queue_swap(plIdx, plIdx - 1)                
+					pO.playlist.queue_swap(plIdx, plIdx - 1)
 				},
 				queue_down: function(plIdx) {
 					pO.playlist.queue_swap(plIdx, plIdx + 1)
@@ -333,9 +333,9 @@ var player = {
 					if (!track.duration && duration) {
 						track.duration = formatSecToMin(parseInt(duration));
 						if (dqs("#load-album")) {
-						    dqs("#load-album").click();
+							dqs("#load-album").click();
 						} else if (dqs("#load-artist")) {
-						    dqs("#load-artist").click();
+							dqs("#load-artist").click();
 						}
 					} else if (!track.duration && pO.au.duration) {
 						var xhr = getXhr("GET", "/track/setduration", {'id': track.id, 'duration': pO.au.duration});
@@ -347,7 +347,7 @@ var player = {
 								} finally { }
 							} else {
 								alert("Произошла ошибка. Попробуйте позже.");
-							} 
+							}
 						}
 					}
 					pO.playlist._render();
@@ -374,7 +374,7 @@ var player = {
 				getPrevTrack: function(track) {
 					for (var i = 0; i < pO.playlist.queue.length; i++) {
 						if (pO.playlist.queue[i] == track) {
-							return (i != 0 ? pO.playlist.queue[i-1]: null);   
+							return (i != 0 ? pO.playlist.queue[i-1]: null);
 						}
 					}
 				},
@@ -398,7 +398,7 @@ var player = {
 	exist: function() { return Boolean(this.au) },
 	play: function() {
 		if (!this.au.src || this.au.src.slice(-4).toLowerCase() != ".mp3") { return; }
-		this.au.play();       
+		this.au.play();
 	},
 	pause: function() {
 		this.au.pause();
@@ -409,7 +409,7 @@ var player = {
 		dqs("#player_audio_data_artist").innerText = track.artist;
 		var albumTitle = track.album || "-";
 		if (track.album && track.albumYear) {
-		    albumTitle += " (" + track.albumYear + ")"
+			albumTitle += " (" + track.albumYear + ")"
 		}
 		dqs("#player_audio_data_album").innerText = albumTitle;
 		dqs("#player_audio_data_track").innerText = track.title;
@@ -421,7 +421,7 @@ var player = {
 	},
 	setVolumePercent: function(volPercent, source) {
 		if (volPercent < 0 || volPercent > 100) { return; }
-		this.prevVolume = this.au.volume;                    
+		this.prevVolume = this.au.volume;
 		this.au.volume = volPercent / 100;
 		if (!source || source != this.volumeSlider) {
 			clickSlider(this.volumeSlider, volPercent);
@@ -520,7 +520,7 @@ var selectQsField = {
 			this.formField.parentNode.insertBefore(this.searchBlock, this.formField);
 				this.resultTableElem.rows[1].cells[1].addEventListener("click", function(e) {
 				if (e.target.classList.contains("link-btn")) {
-					var isSelected = e.target.dataset.id in sqsf.selected;                            
+					var isSelected = e.target.dataset.id in sqsf.selected;
 
 					if (!isSelected) {
 						sqsf.selected[e.target.dataset.id] = e.target.innerText;
@@ -557,7 +557,7 @@ var selectQsField = {
 				var isSelected = false;
 				for (var j = 0; j < this.resultTableElem.rows[1].cells[0].childNodes.length; j++) {
 					if (selectLineId == this.resultTableElem.rows[1].cells[0].childNodes[j].dataset.id) {
-						isSelected = true;                                
+						isSelected = true;
 						break;
 					}
 				}
@@ -614,7 +614,7 @@ var selectQsField = {
 				} finally { }
 			} else {
 				alert("Произошла ошибка. Попробуйте позже.");
-			} 
+			}
 		}
 	}
 }
@@ -630,7 +630,7 @@ document.body.addEventListener("click", function(e) {
 		player.playlist.addTrack(e.target.dataset.id, e.target.dataset.filePath, e.target.dataset.fileFullName, e.target.dataset.artist, e.target.dataset.album, e.target.dataset.albumYear, e.target.dataset.title, e.target.dataset.duration, e.target.dataset.sourceData);
 	} else if (e.target.tagName.toLowerCase() == "a" && !e.target.target) {
 		e.preventDefault();
-		if (!e.target.href) { return; }       
+		if (!e.target.href) { return; }
 		var xhr = getXhr("GET", e.target.href);
 		xhr.onload = function() {
 			if (xhr.readyState == 4 && xhr.status == 200) {
@@ -660,146 +660,165 @@ document.body.addEventListener("click", function(e) {
 				toTracklistBtns[i].dispatchEvent(new MouseEvent("click", {"bubbles": true}));
 			}
 		}
-    } else if (e.target.classList.contains("to-current-playlist-by-title")) {
-        var href = e.target.dataset.source.split('_').slice(-1) + "/tracklist/";
-        if (e.target.dataset.source.startsWith("album")) {
-            href = "/album/" + href;
-        } else if (e.target.dataset.source.startsWith("artist")) {
-            href = "/artist/" + href;
-        }
+	} else if (e.target.classList.contains("to-current-playlist-by-title")) {
+		var href = e.target.dataset.source.split('_').slice(-1) + "/tracklist/";
+		if (e.target.dataset.source.startsWith("album")) {
+			href = "/album/" + href;
+		} else if (e.target.dataset.source.startsWith("artist")) {
+			href = "/artist/" + href;
+		}
 		var xhr = getXhr("GET", href);
 		xhr.onload = function() {
 			if (xhr.readyState == 4 && xhr.status == 200) {
 				if (xhr.responseURL.search("/login") > 0) {
 					window.location = xhr.responseURL;
 				}
-				
-                data = JSON.parse(xhr.response);
-		        if (!data || !data["tracklist"]) {
-				    return alert('Произошла ошибка. Попробуйте обновить страницу.');
-                }
 
-                for (var i = 0; i < data["tracklist"].length; i++) {
-                    player.playlist.addTrack(data["tracklist"][i].id, data["tracklist"][i].url, data["tracklist"][i].fullname, data["tracklist"][i].artist, data["tracklist"][i].album, data["tracklist"][i].albumYear, data["tracklist"][i].title, data["tracklist"][i].duration, data["tracklist"][i].sourceData);
-                }
-            }
-        }
+				data = JSON.parse(xhr.response);
+				if (!data || !data["tracklist"]) {
+					return alert('Произошла ошибка. Попробуйте обновить страницу.');
+				}
+
+				for (var i = 0; i < data["tracklist"].length; i++) {
+					player.playlist.addTrack(data["tracklist"][i].id, data["tracklist"][i].url, data["tracklist"][i].fullname, data["tracklist"][i].artist, data["tracklist"][i].album, data["tracklist"][i].albumYear, data["tracklist"][i].title, data["tracklist"][i].duration, data["tracklist"][i].sourceData);
+				}
+			}
+		}
 	}
 });
 
 var orderAlbumField = {
 	init: function() {
-		var atf = dqs("#album_tracks");
-		var utf = dqs("#unalbumed_tracks");
-		var otf = dqs("#id_track_order");
-		if (!atf || !utf || !otf) { return; }
-		this.atf = atf;
-		this.utf = utf;
-		this.otf = otf;
+		var atTbl = dqs("#album_tracks");
+		var utTbl = dqs("#unalbum_tracks");
+		var otInp = dqs("#id_track_order");
+		if (!atTbl || !utTbl || !otInp) { return; }
+		this.atTbl = atTbl;
+		this.utTbl = utTbl;
+		this.otInp = otInp;
 		var that = this;
 
+		/* id | fileName | rowChecked */
 		this.album_tracks = [];
-		for (var i = 0; i < atf.childNodes.length; i++) {
-			this.album_tracks.push([atf.childNodes[i].dataset.id, atf.childNodes[i].childNodes[0].textContent]);
-		}
-		this.unalbumed_tracks = [];
-		for (var i = 0; i < utf.childNodes.length; i++) {
-			this.unalbumed_tracks.push([utf.childNodes[i].dataset.id, utf.childNodes[i].childNodes[0].textContent]);
+		for (var i = 1; i < atTbl.rows.length; i++) {
+
+			this.album_tracks.push([atTbl.rows[i].cells[2].dataset.id, atTbl.rows[i].cells[2].textContent, false]);
 		}
 
-		this._render();
+		this.unalbum_tracks = [];
+		for (var i = 1; i < utTbl.rows.length; i++) {
+			this.unalbum_tracks.push([utTbl.rows[i].cells[2].dataset.id, utTbl.rows[i].cells[2].textContent, false]);
+		}
 
-		utf.addEventListener("click", function(e) {
-			e.preventDefault();
-			if (e.target.tagName.toLowerCase() == "button") {
-				if (e.target.dataset.act == "add") {
-					var mve = e.target.parentNode.cloneNode(true);
-					that.atf.appendChild(mve);
-					e.target.parentNode.remove();
-					mve.classList.add("green");
+		atTbl.addEventListener("click", function(e) {
+			var trg = e.target;
+
+			if (trg.parentNode.rowIndex != 0 && trg.tagName.toLowerCase() == "input") {
+				if (trg.checked) {
+					trg.parentNode.parentNode.style.backgroundColor = "lightskyblue";
+					that.album_tracks[trg.parentNode.parentNode.rowIndex - 1][2] = true;
+				} else {
+					trg.parentNode.parentNode.style.backgroundColor = "";
+					that.album_tracks[trg.parentNode.parentNode.rowIndex - 1][2] = false;
 				}
+			}
+			else if (trg.parentNode.parentNode.rowIndex == 0) {
+				if (trg.dataset.act == "unselect") {
+					for (var i = 1; i < that.atTbl.rows.length; i++) {
+						that.atTbl.rows[i].cells[0].childNodes[0].checked? that.atTbl.rows[i].cells[0].childNodes[0].click(): null;
+					}
+				} else if (trg.dataset.act == "up" || trg.dataset.act == "down") {
+					var shiftIdx = trg.dataset.act == "up"? 1: -1;
+					for (var i = 1; i < that.atTbl.rows.length; i++) {
+						if (that.atTbl.rows[i].cells[0].childNodes[0].checked) {
+							var curPos = i - 1;
+							if ((curPos == 0 && shiftIdx == 1) || (curPos == that.album_tracks.length -1 && shiftIdx == -1)) continue;
 
-				that._render();
+							var tmp = that.album_tracks[curPos - shiftIdx];
+							that.album_tracks[curPos - shiftIdx] = that.album_tracks[curPos];
+							that.album_tracks[curPos] = tmp;
+						}
+					}
+
+					that._render();
+				} else if (trg.dataset.act == "delete") {
+					var removedIdx = [];
+
+					for (var i = 1; i < that.atTbl.rows.length; i++) {
+						if (that.atTbl.rows[i].cells[0].childNodes[0].checked) {
+							that.album_tracks[i-1][2] = false;
+							removedIdx.push(that.album_tracks[i-1][0]);
+							that.unalbum_tracks.push(that.album_tracks[i-1]);
+						}
+					}
+
+					var tmp = [];
+					for (var i = 0; i < that.album_tracks.length; i++) {
+						removedIdx.includes(that.album_tracks[i][0])? null: tmp.push(that.album_tracks[i]);
+					}
+					that.album_tracks = tmp;
+
+					that._render();
+				}
 			}
 		});
 
-		otf.addEventListener("change", function(e) {
-			e.target.value = e.target.value.replaceAll(" ", "");
-			if (e.target.value.slice(-1) != ",") {
-				e.target.value += ",";
-			}
+		utTbl.addEventListener("click", function(e) {
+			var trg = e.target;
 
-			ids = e.target.value.slice(0, -1).split(",");
-			for (var i = 0; i < ids.length; i++) {
-				if (!that.album_tracks.includes("" + ids[i]) && !that.unalbumed_tracks.includes("" + ids[i])) {
-					return alert("Трек с id = " + ids[i] + " не относится к данному исполнителю!");
+			if (trg.tagName.toLowerCase() == "input") {
+				if (trg.checked) {
+					trg.parentNode.parentNode.style.backgroundColor = "lightskyblue";
+					that.unalbum_tracks[trg.parentNode.parentNode.rowIndex - 1][2] = true;
+				} else {
+					trg.parentNode.parentNode.style.backgroundColor = "";
+					that.unalbum_tracks[trg.parentNode.parentNode.rowIndex - 1][2] = false;
 				}
-			}
-
-			this._render();
-		});
-
-		atf.addEventListener("click", function(e) {
-			e.preventDefault();
-			if (e.target.tagName.toLowerCase() == "button") {
-				if (e.target.dataset.act == "up") {
-					for (var i = 0; i < that.album_tracks.length; i++) {
-						if (e.target.parentNode.dataset.id == that.album_tracks[i][0]) {
-							if (i == 0) { break }
-							var swp = that.album_tracks[i-1];
-							that.album_tracks[i-1] = that.album_tracks[i];
-							that.album_tracks[i] = swp;
-							break;
-						}
-					}
-				} else if (e.target.dataset.act == "down") {
-					for (var i = that.album_tracks.length - 1; i > -1; i--) {
-						if (e.target.parentNode.dataset.id == that.album_tracks[i][0]) {
-							if (i == that.album_tracks.length - 1) { break }
-							var swp = that.album_tracks[i+1];
-							that.album_tracks[i+1] = that.album_tracks[i];
-							that.album_tracks[i] = swp;
-							break;
-						}
-					}
-				} else if (e.target.dataset.act == "remove") {
-					for (var i = 0; i < that.album_tracks.length; i++) {
-						if (e.target.parentNode.dataset.id == that.album_tracks[i][0]) {
-							that.unalbumed_tracks.push(that.album_tracks[i]);
-							that.album_tracks.splice(i, 1);
-							break;
-						}
+			} else if (trg.parentNode.parentNode.rowIndex == 0) {
+				if (trg.dataset.act == "unselect") {
+					for (var i = 1; i < that.utTbl.rows.length; i++) {
+						that.utTbl.rows[i].cells[0].childNodes[0].checked? that.utTbl.rows[i].cells[0].childNodes[0].click(): null;
 					}
 				}
+				else if (trg.dataset.act == "push") {
+					var removedIdx = [];
 
-				that._render();
+					for (var i = 1; i < that.utTbl.rows.length; i++) {
+						if (that.utTbl.rows[i].cells[0].childNodes[0].checked) {
+							that.unalbum_tracks[i-1][2] = false;
+							removedIdx.push(that.unalbum_tracks[i-1][0]);
+							that.album_tracks.push(that.unalbum_tracks[i-1]);
+						}
+					}
+
+					var tmp = [];
+					for (var i = 0; i < that.unalbum_tracks.length; i++) {
+						removedIdx.includes(that.unalbum_tracks[i][0])? null: tmp.push(that.unalbum_tracks[i]);
+					}
+					that.unalbum_tracks = tmp;
+
+					that._render();
+				}
 			}
 		});
 	},
 	_render: function() {
-		var albumBtnHTML = "&nbsp;<button data-act='up' title='Выше'>&uarr;</button><button data-act='down' title='Ниже'>&darr;</button><button data-act='remove' title='Удалить из альбома'>&cross;</button>";
-		var unalbumedBtnHTML = "&nbsp;<button data-act='add' title='В Альбом'>+</button>";
+		var that = this;
 
-		this.atf.innerHTML = "";
-		this.otf.value = "";
-		for (var i = 0; i < this.album_tracks.length; i++) {
-			var li = document.createElement("li");
-			li.dataset.id = this.album_tracks[i][0];
-			li.innerText = this.album_tracks[i][1];
-			li.innerHTML += albumBtnHTML;
-			this.atf.appendChild(li);
+		var redrawTbl = function(tbl, data) {
+			tbl.innerHTML = tbl.rows[0].innerHTML;
+			for (var i = 0; i < data.length; i++) {
+				var tr = document.createElement("tr");
+				tr.innerHTML = "<td class='center' style='width: 5em;'><input type='checkbox' /></td><td class='center' style='width: 5em;'>" + (i + 1) + "</td><td data-id='" + data[i][0] + "' colspan='2'>" + data[i][1] + "</td>";
+				tbl.appendChild(tr);
 
-			this.otf.value += this.album_tracks[i][0] + ",";
+				data[i][2]? tr.cells[0].childNodes[0].click(): null;				
+			}
 		}
 
-		this.utf.innerHTML = "";
-		for (var i = 0; i < this.unalbumed_tracks.length; i++) {
-			var li = document.createElement("li");
-			li.dataset.id = this.unalbumed_tracks[i][0];
-			li.innerText = this.unalbumed_tracks[i][1];
-			li.innerHTML += unalbumedBtnHTML;
-			this.utf.appendChild(li);
-		}
+		redrawTbl(this.atTbl, this.album_tracks);
+		redrawTbl(this.utTbl, this.unalbum_tracks);
+		this.otInp.value = (function() { var r = []; for (var i = 0; i < that.album_tracks.length; i++) { r.push(that.album_tracks[i][0]) } return r; }()).join(",") + ",";
 	}
 }
 

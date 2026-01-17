@@ -77,6 +77,7 @@ class AddAlbumForm(forms.ModelForm):
     class Meta:
         model = Album
         fields = ['artist', 'year', 'title', 'genre', 'track_order']
+        widgets = {'track_order': forms.HiddenInput()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

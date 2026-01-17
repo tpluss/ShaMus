@@ -51,22 +51,49 @@
 			{% endfor %}
 		</table>
 
-		<input type="submit" name="save" value="Сохранить" class="form-btn" />
-
 		<div style="border-top: 2px #000 solid;">
 			<h3>Треки в Альбоме</h3>
-			<ul id="album_tracks" class="tracklist">
+			<table id="album_tracks" class="album-order-track-tbl">
+                <tr>
+                    <th colspan="1" class="center">
+						<button data-act="unselect" class="big-text" type="button">&#9744;</button>
+                    </th>
+                    <th colspan="2" class="center">
+						<button data-act="up" class="big-text" type="button">&uArr;</button>
+						&nbsp;
+						<button data-act="down" class="big-text" type="button">&dArr;</button>
+						&nbsp;
+						<button data-act="delete" class="big-text" type="button">&Cross;</button>
+					</th>
+                </tr>
 				{% for track in album_tracks %}
-					<li data-id="{{ track.id }}">{{ track.get_full_name }}</li>
+					<tr>
+                        <td class="center" style="width: 5em;"><input type="checkbox" /></td>
+                        <td class="center" style="width: 5em;">{{ forloop.counter }}</td>
+                        <td data-id="{{ track.id }}">{{ track.get_full_name }}</td>
+                    </tr>
 				{% endfor %}
-			</ul>
+			</table>
 			<h3>Треки не в Альбомах</h3>
-			<ul id="unalbumed_tracks" class="tracklist">			
+			<table id="unalbum_tracks" class="album-order-track-tbl">
+				<tr>
+                    <th colspan="1" class="center">
+						<button data-act="unselect" class="big-text" type="button">&#9744;</button>
+                    </th>
+                    <th colspan="2" class="center">
+						<button data-act="push" class="big-text" type="button">&#x2714;</button>
+					</th>
+                </tr>
 				{% for track in unalbumed_tracks %}
-					<li data-id="{{ track.id }}">{{ track.get_full_name }}</li>
+					<tr>
+                        <td class="center" style="width: 5em;"><input type="checkbox" /></td>
+                        <td class="center" style="width: 5em;">{{ forloop.counter }}</td>
+                        <td data-id="{{ track.id }}">{{ track.get_full_name }}</td>
+                    </tr>
 				{% endfor %}
-			</ul>
+			</table>
 		</div>
-		<input type="submit" name="ordersave" value="Сохранить" class="form-btn" />
+		<br>
+		<input type="submit" name="save" value="Сохранить" class="form-btn" />
 	</form>
 {% endblock %}
