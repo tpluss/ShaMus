@@ -390,6 +390,9 @@ def last_uploaded(request, mdl: str, qnt: int):
                     initial={'entity': mdl, 'qnt': qnt})
             }
 
+            if mdl == 'track':
+                logic.set_albums_for_track_qs(ret[rd_opts[mdl][0]])
+
             return ret
 
         return get_rd

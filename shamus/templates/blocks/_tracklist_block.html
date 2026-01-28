@@ -4,6 +4,10 @@
 		{% for track in tracks %}
 			<li>
 				<span style="font-size:0.6em; font-style: italic; margin-bottom:-0.5em;">{% for artist in track.artist.all %}<a href="{% url 'artist-view' artist.id %}">{{ artist.title }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+				{% if include_track_album and track.in_album %}
+					<br/>
+					<span style="font-size:0.5em; font-style: italic; margin-bottom:-0.5em;"><a href="{% url 'album-view' track.in_album.id %}">{{ track.in_album.title }} ({{ track.in_album.year }})</a></span>
+				{% endif %}
 				<br/>
 				<span>{{ track.title|default:track.get_file_name }}{% with track.get_duration_min as track_min %}{% if track_min %}&nbsp; | {{ track_min }}{% endif %}{% endwith %} | </span>
 				&nbsp;<a href="{% url 'download' 'track' track.id %}" target="_blank">&#x2913;</a>

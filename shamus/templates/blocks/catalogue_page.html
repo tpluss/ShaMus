@@ -26,7 +26,10 @@
 				<ul>
 					{% for album in albums %}
 				        <li>
-					        <a href="{% url 'album-view' album.id %}">{{ album.title }} ({{ album.year }})</a>
+							{% if include_album_artists %}
+								{% for artist in album.artist.all %}<a href="{% url 'artist-view' artist.id %}">{{ artist }}{% if not forloop.last%}, {% endif %}</a>{% endfor %}&nbsp;&mdash;
+					        {% endif %}
+							<a href="{% url 'album-view' album.id %}">{{ album.title }} ({{ album.year }})</a>
                             &nbsp;<button class="small-text to-current-playlist-by-title" data-source="album_{{ album.id }}">Всё в плейлист &rarr;</button>
 					        <div class="small-text mt02">
 						        Длительность: {% with album_duration=album.get_duration %}<span class="b">{% if album_duration.0 %}{{ album_duration.0 }}{% if album_duration.0 and album_duration.1 %} + ???{% endif %}{% else %}???</span>{% endif %}{% endwith %}&nbsp;<span>Жанры: {% for genre in album.genre.all %}<a class="album-genre" href="{% url 'catalogue-page-genre' genre.id %}">{{ genre.title }}</a>{% empty %}&mdash;{% endfor %}</span>

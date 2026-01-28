@@ -1,16 +1,18 @@
 {% spaceless %}
 	<div>
 		<h2><a href="{% url 'catalogue' %}">Каталог</a>&nbsp;&gt;&nbsp;<span>{{ title }}</span></h2>
-        <form onsubmit="this.action = '/last/' + dqs('#{{ form.entity.auto_id }}').selectedOptions[0].value + '/' + dqs('#{{ form.qnt.auto_id }}').value + '/';" method="POST">
+        <form action="" method="GET">
             {% csrf_token %}
             Выбрать&nbsp;{{ form.entity }}&nbsp;{{ form.qnt }} шт. и&nbsp;
-            <input type="submit" name="" value="Показать">
+            <input type="submit" name="" value="Показать" onclick="this.parentNode.action = '/last/' + dqs('#{{ form.entity.auto_id }}').selectedOptions[0].value + '/' + dqs('#{{ form.qnt.auto_id }}').value + '/';">
         </form>
 	</div>
     {% if entity == 'tracks' %}
-	    {% include "blocks/_tracklist_block.html" %}
+		{% with include_track_album=True %}
+			{% include "blocks/_tracklist_block.html" %}
+		{% endwith %}
     {% elif entity == 'albums' %}
-        {% with exclude_header=True exclude_footer=True %}
+        {% with exclude_header=True exclude_footer=True include_album_artists=True %}
             {% include "blocks/catalogue_page.html" %}
         {% endwith %}    
     {% elif entity == 'artists' %}

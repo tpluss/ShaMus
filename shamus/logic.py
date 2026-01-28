@@ -5,6 +5,7 @@ import random
 import shutil
 from django.conf import settings
 from django.core.files import File
+from django.db.models.query import QuerySet
 from .utils import (store_uploaded_file, get_md5_hexdigest,
                     escape_path, create_zip_arch, is_mp3_ext)
 from .models import Track, Artist, Album, Genre
@@ -332,3 +333,21 @@ def get_random_track(data_format: str ='python_dict') -> Track | None:
             search_repeat_cnt += 1
 
     return None
+
+
+def set_albums_for_track_qs(track_qs: QuerySet[Track]):
+    track_album = dict(zip(track_qs.values_list('id', flat=True),
+                          [None] * track_qs.count()))
+
+    for track in track_qs:
+        if track_album[track.id] is None:
+            track_album[track.id] = track.get_track_album()
+
+        if track_album[track.id]:
+            for album_track_id in (track_album[track.id].track.all()
+                    .values_list('id', flat=True)):
+                if album_track_id in track_album:
+                    track_album[album_track_id] = track_album[track.id]
+
+    for track in track_qs:
+        setattr(track, 'in_album', track_album[track.id])

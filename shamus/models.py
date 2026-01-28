@@ -109,10 +109,13 @@ class Track(CommonModel):
 
         return self.get_hash()
 
+    def get_track_album(self):
+        return Album.used.filter(track=self).first()
+
     def get_track_player_data(self, data_format: str ='python_dict',
                               track_album: 'Album' = None):
         if track_album is None:
-            track_album = Album.used.filter(track=self).first()
+            track_album = self.get_track_album()
 
         track_data = {
             'id': self.id,

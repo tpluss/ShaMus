@@ -684,6 +684,24 @@ document.body.addEventListener("click", function(e) {
 				}
 			}
 		}
+	} else if (e.target.parentNode.tagName.toLowerCase() == "form" && e.target.type && e.target.type == "submit" && !e.target.parentNode.classList.contains("prevent-dynamic")) {
+		e.preventDefault();
+		href = e.target.parentNode.action
+		var xhr = getXhr("GET", href);
+		xhr.onload = function() {
+			if (xhr.readyState == 4 && xhr.status == 200) {
+				if (xhr.responseURL.search('/login') > 0) {
+					window.location = xhr.responseURL;
+				}
+				window.history.pushState({'render_data': xhr.response}, "", href);
+				dqs("#workplace_main").innerHTML = xhr.response;
+
+				var titleCookie = getCookie('shamus-title', true);
+				document.title = "ShaMus" + (titleCookie? (" | " + titleCookie): "");
+			} else {
+				alert("Произошла ошибка. Попробуйте позже.");
+			}
+		}
 	}
 });
 
